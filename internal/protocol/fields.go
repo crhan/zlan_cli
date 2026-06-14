@@ -201,3 +201,12 @@ func BitFields() []BitField {
 	copy(out, bitFields)
 	return out
 }
+
+// FieldOptions 返回枚举字段的可选值名(按取值排序);非枚举字段返回 nil。
+func FieldOptions(name string) []string {
+	f, ok := fieldIndex[name]
+	if !ok || f.Kind != KindEnum || f.Enum == nil {
+		return nil
+	}
+	return f.Enum.options()
+}

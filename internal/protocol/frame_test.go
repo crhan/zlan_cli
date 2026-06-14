@@ -89,7 +89,8 @@ func TestDecodeUDPBad(t *testing.T) {
 		nil,
 		{0x5a},
 		{0x5a, 0x4c, 0x00}, // 过短
-		full,               // magic 错
+		append([]byte{0x5a, 0x4c, 0x01}, make([]byte, 100)...), // magic 对但参数区不足 167(防短包清零回写)
+		full, // magic 错
 	}
 	for i, b := range cases {
 		if _, _, err := DecodeUDP(b); err == nil {

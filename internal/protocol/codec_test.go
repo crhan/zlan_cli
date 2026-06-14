@@ -186,3 +186,66 @@ func TestSetFieldValidation(t *testing.T) {
 		}
 	}
 }
+
+// TestReconKeepAliveOrder 锁死 §9 裁决:同时写两个不同值,确认不串位。
+func TestReconKeepAliveOrder(t *testing.T) {
+	var p Param
+	if err := p.SetField("recon_time", "15"); err != nil {
+		t.Fatal(err)
+	}
+	if err := p.SetField("keep_alive", "90"); err != nil {
+		t.Fatal(err)
+	}
+	if p[96] != 15 || p[97] != 90 {
+		t.Fatalf("recon/keep_alive 写串:p[96]=%d p[97]=%d,期望 15/90", p[96], p[97])
+	}
+}
+
+// TestDestStringGolden 钉死 dest_string@66(SPEC §16 串口 §3.12 向量,该字段曾被 OCR 敲错到 64/65)。
+func TestDestStringGolden(t *testing.T) {
+	var p Param
+	if err := p.SetField("dest_string", "192.168.1.188"); err != nil {
+		t.Fatal(err)
+	}
+	want := mustHex(t, "31 39 32 2e 31 36 38 2e 31 2e 31 38 38 00") // "192.168.1.188\0"
+	if got := p[66 : 66+len(want)]; !bytes.Equal(got, want) {
+		t.Fatalf("dest_string@66: got %x want %x", got, want)
+	}
+	if long := strings.Repeat("a", 29); p.SetField("dest_string", long) != nil {
+		t.Fatal("29 字符(+结尾0=30)应允许")
+	}
+	if p[66+29] != 0 {
+		t.Fatal("满长度后第 30 字节应为结尾 0")
+	}
+	if err := p.SetField("dest_string", strings.Repeat("a", 30)); err == nil {
+		t.Fatal("30 字符应拒绝(无处放结尾 0)")
+	}
+	if err := p.SetField("dest_string", "ab\x00cd"); err == nil {
+		t.Fatal("含 NUL 应拒绝")
+	}
+}
+
+// TestKeyNoClobber 回归 P1-1:set 短 key 不得清零尾部(SPEC §3 key 勿清零)。
+func TestKeyNoClobber(t *testing.T) {
+	var p Param
+	for i := 21; i < 31; i++ {
+		p[i] = 0x38 // 预填 "8888888888" 模拟设备已有密码
+	}
+	if err := p.SetField("key", "1234"); err != nil {
+		t.Fatal(err)
+	}
+	if p[21] != 0x12 || p[22] != 0x34 {
+		t.Fatalf("key 前缀未写入:%02x %02x", p[21], p[22])
+	}
+	for i := 23; i < 31; i++ {
+		if p[i] != 0x38 {
+			t.Fatalf("key 尾部 @%d 被清零(违反勿清零):%02x", i, p[i])
+		}
+	}
+	if err := p.SetField("key", "xyz"); err == nil {
+		t.Fatal("非法 hex 应拒绝")
+	}
+	if err := p.SetField("key", strings.Repeat("ab", 11)); err == nil {
+		t.Fatal("超长应拒绝")
+	}
+}

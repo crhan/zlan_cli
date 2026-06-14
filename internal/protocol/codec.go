@@ -124,6 +124,9 @@ func (p *Param) parseInto(f Field, value string) error {
 		dst[0] = v
 	case KindCString:
 		bs := []byte(value)
+		if bytes.IndexByte(bs, 0) >= 0 {
+			return fmt.Errorf("%s:不能含 NUL 字节", f.Name)
+		}
 		if len(bs) > f.Size-1 { // 须留至少 1 字节给结尾 0
 			return fmt.Errorf("%s:字符串过长,最多 %d 字节(含结尾 0)", f.Name, f.Size)
 		}
@@ -138,11 +141,15 @@ func (p *Param) parseInto(f Field, value string) error {
 		}
 		dst[0] = byte(n)
 	case KindRaw:
-		raw, err := parseHexBytes(value, f.Size)
+		raw, err := decodeHex(value)
 		if err != nil {
-			return fmt.Errorf("%s:%w", f.Name, err)
+			return fmt.Errorf("%s:需 hex 字符串:%w", f.Name, err)
 		}
-		copy(dst, raw)
+		if len(raw) > f.Size {
+			return fmt.Errorf("%s:超长,最多 %d 字节", f.Name, f.Size)
+		}
+		// 只覆盖用户给出的字节,保留尾部不动(SPEC §3:key 是密码,勿清零)
+		copy(dst[:len(raw)], raw)
 	case KindOpaque:
 		return fmt.Errorf("%s 为保留区,不支持直接设置", f.Name)
 	default:
@@ -179,17 +186,8 @@ func parseUint(s string, bits int) (uint64, error) {
 	return strconv.ParseUint(s, base, bits)
 }
 
-// parseHexBytes 把 hex 字符串解析为定长字节(不足右侧补 0,超长报错)。
-func parseHexBytes(s string, size int) ([]byte, error) {
+// decodeHex 解析 hex 字符串(允许 0x 前缀);不做长度填充,长度由调用方校验。
+func decodeHex(s string) ([]byte, error) {
 	s = strings.TrimPrefix(strings.ToLower(strings.TrimSpace(s)), "0x")
-	raw, err := hex.DecodeString(s)
-	if err != nil {
-		return nil, fmt.Errorf("需 hex 字符串:%w", err)
-	}
-	if len(raw) > size {
-		return nil, fmt.Errorf("超长,最多 %d 字节", size)
-	}
-	out := make([]byte, size)
-	copy(out, raw)
-	return out, nil
+	return hex.DecodeString(s)
 }

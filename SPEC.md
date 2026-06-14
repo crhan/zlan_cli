@@ -308,7 +308,7 @@ zlan/
       codec_test.go             golden hex（§16）+ 往返 + 坏输入不 panic
     transport/
       transport.go              interface{ ReadSeg/WriteSeg/Discover/Monitor }
-      udp.go                    定向广播逐网卡 + 总 deadline 收齐 + DevID 去重；单播 UDPAddr+重试；monitor 原路回包 + REUSEADDR
+      udp.go                    定向广播逐网卡 + 总 deadline 收齐 + DevID 去重；单播 UDPAddr+重试；monitor 原路回包(UDP 无 TIME_WAIT、discover 用临时端口,故不需 REUSEADDR)
       udp_test.go               127.0.0.1:0 fake echo 设备；ip|^mask 纯函数测
       serial.go                 go.bug.st/serial，分段读写（保守上限）
     device/

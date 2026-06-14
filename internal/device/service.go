@@ -31,6 +31,9 @@ var networkFields = map[string]bool{
 	"dhcp_en": true, "dns_server_ip": true,
 }
 
+// IsNetworkField 报告改该字段是否会触发设备重启(可能换网段),供上层预判确认文案。
+func IsNetworkField(name string) bool { return networkFields[name] }
+
 // SetResult 汇报一次 set 的结果。
 type SetResult struct {
 	Before       protocol.Param

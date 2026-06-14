@@ -68,6 +68,7 @@ func NewRootCmd() *cobra.Command {
 		newMonitorCmd(g),
 		newPortsCmd(g),
 		newApplyCmd(g),
+		newVersionCmd(g),
 	)
 	return root
 }

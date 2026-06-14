@@ -66,17 +66,6 @@ func Discover(ctx context.Context, wait time.Duration) ([]Device, error) {
 	}
 	defer conn.Close()
 
-	// ctx 取消时把读截止时间提前,让阻塞的 ReadFromUDP 立刻返回。
-	stop := make(chan struct{})
-	defer close(stop)
-	go func() {
-		select {
-		case <-ctx.Done():
-			_ = conn.SetReadDeadline(time.Now())
-		case <-stop:
-		}
-	}()
-
 	payload := protocol.EncodeBroadcastQuery()
 	for _, t := range broadcastTargets() {
 		dst := &net.UDPAddr{IP: t, Port: protocol.MgmtPort}
@@ -86,6 +75,17 @@ func Discover(ctx context.Context, wait time.Duration) ([]Device, error) {
 	}
 
 	_ = conn.SetReadDeadline(time.Now().Add(wait))
+
+	// 设好初始 deadline 后再启动取消监听,否则 ctx 提前取消时设的 deadline 会被上面这行覆盖。
+	stop := make(chan struct{})
+	defer close(stop)
+	go func() {
+		select {
+		case <-ctx.Done():
+			_ = conn.SetReadDeadline(time.Now())
+		case <-stop:
+		}
+	}()
 	seen := make(map[[6]byte]bool)
 	var devs []Device
 	buf := make([]byte, udpReadBuf)

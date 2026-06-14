@@ -32,7 +32,10 @@ func newDiscoverCmd(g *globalFlags) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if len(devs) == 0 && !g.jsonOut {
+			if len(devs) == 0 {
+				if g.jsonOut {
+					_ = renderDevices(cmd.OutOrStdout(), devs, true) // 仍输出合法空数组 []
+				}
 				return exitErr(ExitNotFound, fmt.Errorf(
 					"未发现任何设备(确认设备上电、与本机同一局域网、防火墙放行 UDP %d)", protocol.MgmtPort))
 			}

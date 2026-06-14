@@ -148,14 +148,15 @@ func (c *SerialConn) readN(n int) ([]byte, error) {
 	deadline := time.Now().Add(c.timeout)
 	got := 0
 	for got < n {
+		// deadline 检查与是否读到数据无关地放在循环顶,避免某些平台 Read 立即返回 (0,nil) 时 busy-loop。
+		if !time.Now().Before(deadline) {
+			return nil, fmt.Errorf("串口读超时:期望 %d 字节,实际 %d(检查波特率是否与设备匹配)", n, got)
+		}
 		m, err := c.port.Read(buf[got:])
 		if err != nil {
 			return nil, fmt.Errorf("串口读失败: %w", err)
 		}
 		got += m
-		if got < n && !time.Now().Before(deadline) {
-			return nil, fmt.Errorf("串口读超时:期望 %d 字节,实际 %d(检查波特率是否与设备匹配)", n, got)
-		}
 	}
 	return buf, nil
 }

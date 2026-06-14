@@ -45,7 +45,7 @@ func (t Target) Open(ctx context.Context) (*Endpoint, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &Endpoint{Conn: c, DevID: t.Host}, nil
+		return &Endpoint{Conn: c}, nil // DevID 留空:IP 直连此刻未知设备 MAC,勿把 IP 塞进 DevID 字段
 	}
 	// 既非 IP,当作 DevID(MAC),广播匹配出其真实地址。
 	want, err := parseDevID(t.Host)

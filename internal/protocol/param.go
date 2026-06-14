@@ -34,7 +34,7 @@ func (p *Param) DevID() [6]byte {
 
 // Connected 读连接状态(status@61 的 bit0)。1=TCP 已连接或处于 UDP 态。
 // 注意:UDP 模式查询恒为已连接。
-func (p *Param) Connected() bool { return p[61]&0x01 == 1 }
+func (p *Param) Connected() bool { return p[61]&0x01 != 0 }
 
 // --- UDP 通道常量(SPEC §1/§2.1)---
 

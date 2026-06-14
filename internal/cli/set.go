@@ -34,16 +34,26 @@ func runWrite(cmd *cobra.Command, g *globalFlags, args []string, mode transport.
 	if err != nil {
 		return exitErr(ExitUsage, err)
 	}
+	network := anyNetwork(kvs)
+
+	switch {
+	case mode == transport.WriteVolatile && network:
+		// tune 定位是串口调试参数(波特率/校验/数据位);网络字段会重启保存,应走 set。
+		return exitErr(ExitUsage, fmt.Errorf("tune 不支持网络字段(会重启保存);请用 set 修改 IP/掩码/网关/DHCP/DNS"))
+	case mode == transport.WritePersist && network && !g.confirm:
+		// SPEC §10:改网络字段可能使设备失联,属高危,-y 不够,必须显式 --confirm。
+		return exitErr(ExitUsage, fmt.Errorf("改网络参数(IP/掩码/网关/DHCP/DNS)可能使设备失联,属高危操作,请显式加 --confirm"))
+	}
 
 	label := targetLabel(g, host)
 	var msg string
 	if mode == transport.WritePersist {
 		msg = fmt.Sprintf("将修改 %s 的 %d 个字段并保存重启设备", label, len(kvs))
-		if anyNetwork(kvs) {
+		if network {
 			msg += yellow("(含网络参数,设备可能切换网段/失联)")
 		}
 	} else {
-		msg = fmt.Sprintf("将临时修改 %s 的 %d 个参数(不保存、断电恢复)", label, len(kvs))
+		msg = fmt.Sprintf("将临时修改 %s 的 %d 个串口参数(不保存、断电恢复)", label, len(kvs))
 	}
 	ok, err := confirm(cmd, g, msg)
 	if err != nil {
