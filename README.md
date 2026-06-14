@@ -1,0 +1,90 @@
+# zlan
+
+ZLAN(上海卓岚)串口服务器 / 联网模块管理命令行工具。
+通过 **UDP 管理端口(1092)** 或 **串口命令模式** 发现、查看、配置、重启卓岚联网模块。
+
+遵循 [Command Line Interface Guidelines](https://clig.dev):人读表格 + 机器读 `--json`,数据走 stdout、进度/错误走 stderr,破坏性操作确认,完善的退出码与补全。
+
+## 安装
+
+```sh
+go build -o zlan .          # 本地构建
+# 或 go install(若已发布到模块仓库)
+```
+
+## 快速开始
+
+```sh
+zlan discover                              # 广播发现局域网内所有设备
+zlan info 192.168.1.200                    # 查看一台设备的完整参数
+zlan get 192.168.1.200 local_ip            # 读取单个字段(脚本友好)
+zlan set 192.168.1.200 dest_port=4196      # 修改配置(会保存并重启设备)
+zlan reboot 192.168.1.200                  # 重启
+zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首次配置)
+```
+
+## 命令
+
+| 命令 | 说明 |
+|---|---|
+| `discover` | 广播发现局域网设备(别名 `scan`/`ls`) |
+| `info <target>` | 读取并分组展示完整参数 |
+| `get <target> <field>` | 读取单字段;`get --list-fields` 列出所有字段 |
+| `set <target> <k=v>...` | 修改配置(保存并重启设备) |
+| `tune <target> <k=v>...` | 临时设串口参数(不保存、不重启,断电恢复) |
+| `reboot <target>` | 重启设备 |
+| `status <target>` | TCP 连接状态(轻量探针,适合 `watch`) |
+| `monitor` | 被动监听设备周期上报(0x01) |
+| `apply -f <yaml>` | 按清单批量配置(按 DevID 匹配) |
+| `ports` | 列出本机可用串口 |
+
+`<target>` 为设备 IP 或 DevID(MAC);用 `--serial <路径>` 时省略。
+
+## 两条通道
+
+- **UDP(默认)**:设备已联网时用,`zlan <命令> <IP|DevID>`。
+- **串口**:IP 配错连不上时救砖、首次本地配置,加 `--serial <路径> --baud <波特率>`(波特率须匹配设备当前值;`zlan ports` 查路径,macOS 选 `/dev/cu.*`)。
+
+两条通道共享同一套 167 字节参数,字段名、取值完全一致。
+
+## 批量配置
+
+```yaml
+# devices.yaml —— 按 DevID(MAC)匹配,IP 改完即变不能作主键
+- match: {devid: "5a:4c:6f:73:cc:d6"}
+  set:   {local_ip: 10.0.0.11, net_mask: 255.255.255.0, gateway: 10.0.0.1}
+- match: {devid: "5a:4c:6f:73:cc:d7"}
+  set:   {local_ip: 10.0.0.12}
+```
+
+```sh
+zlan apply -f devices.yaml            # dry-run 预览 before->after,不写入
+zlan apply -f devices.yaml --confirm  # 实际执行
+```
+
+## 输出与退出码
+
+所有命令支持 `--json`(机器可读)。全局 flag:`-q/--quiet`、`-v/--verbose`、`--no-color`、`-y/--yes`、`--confirm`、`--timeout`、`--retries`。
+
+| 码 | 含义 | 码 | 含义 |
+|---|---|---|---|
+| 0 | 成功 | 5 | 协议解析失败 |
+| 2 | 用法错误 | 6 | 鉴权失败 |
+| 3 | 设备未找到/无应答 | 7 | 批量部分失败 |
+| 4 | 超时 | 130 | Ctrl-C 取消 |
+
+## ⚠ 待真机验证
+
+字节布局严格对齐两份官方文档 + 样例,但以下推定**尚未在真机验证**(详见 `SPEC.md` §17),首次对真机使用请留意并反馈:
+
+1. `parity` 的 even/odd 编码(两份文档定义相反);
+2. 串口单帧读写上限(当前保守分段 64 字节);
+3. 写后是否有 ACK;保活/重连字节序(96/97);
+4. 改参密码(`func_en.need_password`)的编码方式 —— 本期未实现密码写入。
+
+IO 控制、中心服务器上报功能依赖未提供的外部文档,**不在本期范围**。
+
+## 文档
+
+- `SPEC.md` —— 完整协议规格、偏移表、命令语义、golden 向量、待验证清单。
+- `CLAUDE.md` —— 开发须知与协议铁坑。
