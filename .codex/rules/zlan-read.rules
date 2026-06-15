@@ -1,0 +1,30 @@
+# Project-local Codex execpolicy rules.
+#
+# Keep allow rules pointed at a fixed installed binary outside this writable
+# workspace. Allowing ./dist/zlan or go run would let an agent modify the
+# executable first, then run arbitrary host code through a trusted prefix.
+
+prefix_rule(
+    pattern = [
+        "/Users/ruohan.chen/go/bin/zlan",
+        ["discover", "scan", "ls"],
+    ],
+    decision = "allow",
+    justification = "Read-only UDP discovery for ZLAN devices via fixed installed binary.",
+    match = [
+        ["/Users/ruohan.chen/go/bin/zlan", "discover"],
+        ["/Users/ruohan.chen/go/bin/zlan", "discover", "--target", "192.168.15.255"],
+        ["/Users/ruohan.chen/go/bin/zlan", "discover", "--target", "192.168.15.255", "--bind", "192.168.15.10"],
+        ["/Users/ruohan.chen/go/bin/zlan", "scan"],
+        ["/Users/ruohan.chen/go/bin/zlan", "ls"],
+    ],
+    not_match = [
+        ["zlan", "discover"],
+        ["./dist/zlan", "discover"],
+        ["dist/zlan", "discover"],
+        ["/Users/ruohan.chen/project/zlan_cli/dist/zlan", "discover"],
+        ["/Users/ruohan.chen/go/bin/zlan", "info", "192.168.15.42"],
+        ["/Users/ruohan.chen/go/bin/zlan", "set", "192.168.15.42", "dest_port=4196"],
+        ["/Users/ruohan.chen/go/bin/zlan", "reboot", "192.168.15.42"],
+    ],
+)
