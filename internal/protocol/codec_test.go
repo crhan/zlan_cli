@@ -103,6 +103,22 @@ func TestCStringField(t *testing.T) {
 	}
 }
 
+func TestDeviceNameGBK(t *testing.T) {
+	var p Param
+	copy(p[38:48], mustHex(t, "b2 e2 ca d4 c9 e8 b1 b8 00 00"))
+	if got, _ := p.GetField("dev_name"); got != "测试设备" {
+		t.Fatalf("GBK 设备名解码 got %q", got)
+	}
+
+	if err := p.SetField("dev_name", "测试设备"); err != nil {
+		t.Fatal(err)
+	}
+	want := mustHex(t, "b2 e2 ca d4 c9 e8 b1 b8 00 00")
+	if got := p[38:48]; !bytes.Equal(got, want) {
+		t.Fatalf("GBK 设备名编码 got %x want %x", got, want)
+	}
+}
+
 func TestVersionFormat(t *testing.T) {
 	var p Param
 	p[103] = 117

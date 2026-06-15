@@ -73,8 +73,18 @@ func NewRootCmd() *cobra.Command {
 	return root
 }
 
-// version 取构建信息里的版本(go install 带 tag);本地构建回退为 dev。
+// 由 GoReleaser 通过 -ldflags 注入。空值表示本地开发构建。
+var (
+	versionOverride string
+	commit          string
+	date            string
+)
+
+// version 取 release 注入版本,再退回构建信息(go install 带 tag),本地构建为 dev。
 func version() string {
+	if versionOverride != "" {
+		return versionOverride
+	}
 	if bi, ok := debug.ReadBuildInfo(); ok && bi.Main.Version != "" && bi.Main.Version != "(devel)" {
 		return bi.Main.Version
 	}

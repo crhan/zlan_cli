@@ -6,6 +6,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	go.bug.st/serial v1.7.1
 	golang.org/x/term v0.44.0
+	golang.org/x/text v0.38.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

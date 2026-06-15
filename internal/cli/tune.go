@@ -17,7 +17,7 @@ func newTuneCmd(g *globalFlags) *cobra.Command {
   zlan tune 192.168.1.200 baud=115200 parity=none
   zlan tune --serial /dev/cu.usbserial-1410 data_bits=8`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runWrite(cmd, g, args, transport.WriteVolatile)
+			return runWrite(cmd, g, args, transport.WriteVolatile, nil)
 		},
 	}
 }

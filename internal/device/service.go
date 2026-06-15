@@ -15,6 +15,11 @@ func Discover(ctx context.Context, wait time.Duration) ([]transport.Device, erro
 	return transport.Discover(ctx, wait)
 }
 
+// DiscoverWithOptions 广播发现局域网设备,允许调用方指定源地址/端口和广播目标。
+func DiscoverWithOptions(ctx context.Context, opt transport.DiscoverOptions) ([]transport.Device, error) {
+	return transport.DiscoverWithOptions(ctx, opt)
+}
+
 // Status 读回设备连接状态(status@61 bit0)。
 func Status(conn transport.Conn) (connected bool, p protocol.Param, err error) {
 	p, err = conn.ReadParam()

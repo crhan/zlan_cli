@@ -82,7 +82,7 @@ ZLAN（上海卓岚 / zlmcu）串口服务器 / 联网模块管理命令行工�
 | 21 | 10 | `key` | param_key[10] | rawbytes | 密码/key | **非填充！读-改-写勿清零**（详见坑） |
 | 31 | 6 | `devid` | ether_addr[6] | rawbytes(readonly) | MAC，6 字节 | **设备唯一标识=MAC**；改参须匹配；部分写避开此区即免匹配 |
 | 37 | 1 | `baud` | baundrate_index | enum | 见表 A（含非标准 7200） | 波特率索引 |
-| 38 | 10 | `dev_name` | dev_name[10] | cstring | 以 0 结尾可见串 | |
+| 38 | 10 | `dev_name` | dev_name[10] | cstring | 以 0 结尾可见串 | 厂家工具可能写 GBK/ANSI 中文名；CLI 读写按 UTF-8→GBK 兼容 |
 | 48 | 1 | `parity` | param_parity | enum | 见表 B（**两文档矛盾，待验证**） | |
 | 49 | 1 | `gap_time` | ...interval | u8 | 串口打包间隔 | |
 | 50 | 2 | `packing_len` | param_max_data_len | u16be | 1..1400 | 打包长度 |
@@ -143,7 +143,7 @@ ZLAN（上海卓岚 / zlmcu）串口服务器 / 联网模块管理命令行工�
 - **enc/dec**：枚举/反序字段用查表（baud、parity、data_bits），不用线性公式
 - **validate**：枚举走白名单；IP 走格式；`packing_len`∈[1,1400]；`group_ip`∈[224.x,239.x]；端口∈[0,65535]
 - **位域子字段**：`func_en`/`io_set`/`func_sel`/`func_sel2` 是容器，其下挂子字段如 `func_en.need_password = {byte:110, bit:2}`。set 位域 = 读回容器字节 → 改位 → 写回；CLI 也接受整字节 `func_en=0x05`
-- **cstring**：写时补 0、清掉旧残留；**rawbytes（key）**：定长，不足补 0x00 但不主动清零未改部分；**opaque（reserve/user_param）**：只透传，永不主动改
+- **cstring**：写时补 0、清掉旧残留；`dev_name` 兼容厂家工具 GBK/ANSI 中文名；**rawbytes（key）**：定长，不足补 0x00 但不主动清零未改部分；**opaque（reserve/user_param）**：只透传，永不主动改
 
 ---
 
@@ -165,10 +165,11 @@ ZLAN（上海卓岚 / zlmcu）串口服务器 / 联网模块管理命令行工�
 ## 6. 命令树与语义
 
 ```
-zlan discover [--timeout]                 广播发现（UDP），表格 DEVID/NAME/IP/MODE/BAUD/VER/STATUS
+zlan discover [--timeout] [--target IP --bind IP]   广播发现（UDP），表格 DEVID/NAME/IP/MODE/BAUD/VER/STATUS
 zlan info    <target>                     读完整参数，分组展示
 zlan get     <target> <field>             读单字段（脚本友好）；get <target> --list-fields 列字段
 zlan set     <target> <k=v>...            改配置（持久，会重启），破坏性
+zlan set     <target> --profile modbus-tcp-rtu      套用 Modbus TCP→RTU 常用网关配置
 zlan tune    <target> baud=.. parity=..   临时串口参数（不存不重启，断电恢复）
 zlan reboot  <target>                     重启
 zlan status  <target>                     连接状态（轻量探针，脚本 watch 用）
@@ -196,6 +197,14 @@ zlan completion [bash|zsh|fish]           shell 补全（cobra 自动）
 `--serial <path>` `--baud <n>`（切串口通道；--baud 须匹配模块当前波特率，默认 115200）
 `--json` `-q/--quiet` `-v/--verbose` `--no-color` `-y/--yes` `--confirm` `--timeout` `--config <path>`
 （`--quiet` 压 `--verbose`；密码不走 flag，见 §11）
+
+`discover` 额外支持 `--target <broadcast-ip>`（可重复/逗号分隔）、`--bind <local-ip>`、
+`--bind-port <port>`。默认仍按所有 up 且支持广播的 IPv4 网卡发定向广播并追加
+`255.255.255.255` 兜底；显式 flag 用于复现现场多网卡/跨网段扫描。
+
+`set --profile modbus-tcp-rtu` 展开为:
+`work_mode=tcp-server local_port=502 app_proto=modbus baud=9600 parity=none data_bits=8`。
+用户同一命令里显式给出的 `field=value` 覆盖 profile 默认值。
 
 ---
 

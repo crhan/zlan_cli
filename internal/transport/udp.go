@@ -58,23 +58,46 @@ func broadcastTargets() []net.IP {
 // Discover 广播发现局域网内所有设备。在 wait 窗口内逐网卡定向广播并反复收包,
 // 只接受设备应答(0x01)帧、按 DevID 去重。找到 0 台不算错误(返回空列表)。
 func Discover(ctx context.Context, wait time.Duration) ([]Device, error) {
+	return DiscoverWithOptions(ctx, DiscoverOptions{Wait: wait})
+}
+
+// DiscoverOptions 控制广播发现的源地址与目标地址。Targets 为空时自动对所有
+// up 且支持广播的 IPv4 网卡发定向广播,并追加 255.255.255.255 兜底。
+type DiscoverOptions struct {
+	Wait     time.Duration
+	BindIP   net.IP
+	BindPort int
+	Targets  []net.IP
+}
+
+// DiscoverWithOptions 广播发现局域网内所有设备。
+func DiscoverWithOptions(ctx context.Context, opt DiscoverOptions) ([]Device, error) {
+	bindIP := opt.BindIP
+	if bindIP == nil {
+		bindIP = net.IPv4zero
+	}
+	targets := opt.Targets
+	if len(targets) == 0 {
+		targets = broadcastTargets()
+	}
+
 	// 绑 0.0.0.0:0:三平台都能正确收广播(Windows 绑具体 IP 收不到),源端口任取。
 	// 设备应答回到"发广播的源端口"(SPEC §17.6),故无需绑 1092,也不与 monitor 抢端口。
-	conn, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4zero, Port: 0})
+	conn, err := net.ListenUDP("udp4", &net.UDPAddr{IP: bindIP, Port: opt.BindPort})
 	if err != nil {
 		return nil, classifyErr(err)
 	}
 	defer conn.Close()
 
 	payload := protocol.EncodeBroadcastQuery()
-	for _, t := range broadcastTargets() {
+	for _, t := range targets {
 		dst := &net.UDPAddr{IP: t, Port: protocol.MgmtPort}
 		if _, err := conn.WriteToUDP(payload, dst); err != nil {
 			log.Printf("warn: 向 %v 发送广播失败: %v", dst, err) // 单目标失败不致命
 		}
 	}
 
-	_ = conn.SetReadDeadline(time.Now().Add(wait))
+	_ = conn.SetReadDeadline(time.Now().Add(opt.Wait))
 
 	// 设好初始 deadline 后再启动取消监听,否则 ctx 提前取消时设的 deadline 会被上面这行覆盖。
 	stop := make(chan struct{})

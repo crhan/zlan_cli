@@ -10,7 +10,8 @@ import (
 )
 
 func newSetCmd(g *globalFlags) *cobra.Command {
-	return &cobra.Command{
+	var profile string
+	cmd := &cobra.Command{
 		Use:   "set [target] <field=value>...",
 		Short: "修改设备配置(保存并重启设备)",
 		Long: `修改设备配置并使生效。每个参数形如 field=value(字段名见 zlan get --list-fields)。
@@ -20,19 +21,30 @@ func newSetCmd(g *globalFlags) *cobra.Command {
 
 示例:
   zlan set 192.168.1.200 dest_port=4196 work_mode=tcp-client
+  zlan set 192.168.1.200 --profile modbus-tcp-rtu
   zlan set 192.168.1.200 local_ip=192.168.1.50 net_mask=255.255.255.0 -y
   zlan set --serial /dev/cu.usbserial-1410 baud=115200`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runWrite(cmd, g, args, transport.WritePersist)
+			preset, err := profileAssignments(profile)
+			if err != nil {
+				return exitErr(ExitUsage, err)
+			}
+			return runWrite(cmd, g, args, transport.WritePersist, preset)
 		},
 	}
+	cmd.Flags().StringVar(&profile, "profile", "", "套用预设配置(modbus-tcp-rtu)")
+	return cmd
 }
 
 // runWrite 是 set(持久)与 tune(临时)的共享实现。
-func runWrite(cmd *cobra.Command, g *globalFlags, args []string, mode transport.WriteMode) error {
-	host, kvs, err := parseWriteArgs(g, args)
+func runWrite(cmd *cobra.Command, g *globalFlags, args []string, mode transport.WriteMode, preset map[string]string) error {
+	host, kvs, err := parseWriteArgs(g, args, len(preset) > 0)
 	if err != nil {
 		return exitErr(ExitUsage, err)
+	}
+	kvs = mergeAssignments(preset, kvs)
+	if len(kvs) == 0 {
+		return exitErr(ExitUsage, fmt.Errorf("至少给一个 field=value 或 --profile"))
 	}
 	network := anyNetwork(kvs)
 
@@ -71,4 +83,33 @@ func runWrite(cmd *cobra.Command, g *globalFlags, args []string, mode transport.
 		}
 		return renderSetResult(cmd, g, res)
 	})
+}
+
+func profileAssignments(name string) (map[string]string, error) {
+	switch name {
+	case "":
+		return nil, nil
+	case "modbus-tcp-rtu":
+		return map[string]string{
+			"work_mode":  "tcp-server",
+			"local_port": "502",
+			"app_proto":  "modbus",
+			"baud":       "9600",
+			"parity":     "none",
+			"data_bits":  "8",
+		}, nil
+	default:
+		return nil, fmt.Errorf("未知 profile:%s(可选:modbus-tcp-rtu)", name)
+	}
+}
+
+func mergeAssignments(base, override map[string]string) map[string]string {
+	out := make(map[string]string, len(base)+len(override))
+	for k, v := range base {
+		out[k] = v
+	}
+	for k, v := range override {
+		out[k] = v
+	}
+	return out
 }

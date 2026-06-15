@@ -25,6 +25,9 @@ ZLAN(上海卓岚 / zlmcu)串口服务器 / 联网模块管理 CLI。Go,双管�
 10. UDP 改参(0x02)必重启必存;串口 0x03 存不重启 / 0x07 存+重启;UDP 0x03 只改串口参数、不重启不存。
 11. 改 local_ip/net_mask/gateway/dhcp_en/dns_server_ip → 设备**必重启、可能换网段**,断连是预期。`device.Set` 对这些字段跳过即时读回校验,`cli` 给失联警告。
 12. 单播必须用 discover 拿到的 `*net.UDPAddr`(外网设备在 NAT 后,凭 IP 重构 `:1092` 回不去)。
+13. `dev_name` 兼容厂家工具写入的 GBK/ANSI 中文名;只这个字段走 GBK 编解码,别扩散到 `dest_string`。
+14. 现场真机可能只稳定响应广播查询,不响应 0x04 单播;排障时用 `discover --target <广播地址> --bind <本机地址>` 复现 Python 版审计路径。
+15. `set --profile modbus-tcp-rtu` 来自现场项目经验:tcp-server + 502 + modbus + 9600/8/N。
 
 ## 待真机验证(SPEC §17,当前均为推定)
 parity even/odd 顺序、串口单帧读写上限(现保守分段 64B)、写后有无 ACK、96/97 终验、改参密码编码、设备应答端口。

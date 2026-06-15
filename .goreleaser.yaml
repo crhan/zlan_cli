@@ -1,0 +1,61 @@
+version: 2
+
+project_name: zlan
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: zlan
+    main: .
+    binary: zlan
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X zlan/internal/cli.versionOverride={{ .Version }}
+      - -X zlan/internal/cli.commit={{ .Commit }}
+      - -X zlan/internal/cli.date={{ .Date }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: zlan
+    ids:
+      - zlan
+    formats:
+      - tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - SPEC.md
+      - CHANGELOG.md
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  use: git
+  sort: asc
+  filters:
+    exclude:
+      - "^docs?:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+
+release:
+  draft: false
+  prerelease: auto
+  mode: replace

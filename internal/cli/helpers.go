@@ -80,7 +80,7 @@ func readParam(ep *device.Endpoint) (protocol.Param, error) {
 }
 
 // parseWriteArgs 解析 set/tune 的参数:[target] field=value...,并校验字段名存在。
-func parseWriteArgs(g *globalFlags, args []string) (host string, kvs map[string]string, err error) {
+func parseWriteArgs(g *globalFlags, args []string, allowEmpty bool) (host string, kvs map[string]string, err error) {
 	kvArgs := args
 	if g.serial == "" {
 		if len(args) < 1 {
@@ -89,7 +89,7 @@ func parseWriteArgs(g *globalFlags, args []string) (host string, kvs map[string]
 		host = args[0]
 		kvArgs = args[1:]
 	}
-	if len(kvArgs) == 0 {
+	if len(kvArgs) == 0 && !allowEmpty {
 		return "", nil, fmt.Errorf("至少给一个 field=value")
 	}
 	kvs = make(map[string]string, len(kvArgs))

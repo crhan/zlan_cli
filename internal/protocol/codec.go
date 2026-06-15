@@ -8,6 +8,9 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"unicode/utf8"
+
+	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
 // Unmarshal 从字节构造 Param,校验长度必须正好 ParamLen。
@@ -75,7 +78,11 @@ func (p *Param) format(f Field) string {
 		}
 		return fmt.Sprintf("unknown(%d)", b[0])
 	case KindCString:
-		return string(trimZero(b))
+		raw := trimZero(b)
+		if f.Name == "dev_name" {
+			return decodeDeviceName(raw)
+		}
+		return string(raw)
 	case KindMAC:
 		return net.HardwareAddr(b).String()
 	case KindVersion:
@@ -123,9 +130,12 @@ func (p *Param) parseInto(f Field, value string) error {
 		}
 		dst[0] = v
 	case KindCString:
-		bs := []byte(value)
-		if bytes.IndexByte(bs, 0) >= 0 {
+		if strings.ContainsRune(value, 0) {
 			return fmt.Errorf("%s:不能含 NUL 字节", f.Name)
+		}
+		bs, err := encodeCString(f, value)
+		if err != nil {
+			return err
 		}
 		if len(bs) > f.Size-1 { // 须留至少 1 字节给结尾 0
 			return fmt.Errorf("%s:字符串过长,最多 %d 字节(含结尾 0)", f.Name, f.Size)
@@ -162,6 +172,32 @@ func (p *Param) parseInto(f Field, value string) error {
 func trimZero(b []byte) []byte {
 	before, _, _ := bytes.Cut(b, []byte{0})
 	return before
+}
+
+// decodeDeviceName 兼容厂家工具写入的 GBK/ANSI 中文名:优先按 UTF-8,
+// 失败后按 GBK 解码,再失败才做替换字符兜底。
+func decodeDeviceName(b []byte) string {
+	if utf8.Valid(b) {
+		return string(b)
+	}
+	decoded, err := simplifiedchinese.GBK.NewDecoder().Bytes(b)
+	if err == nil && utf8.Valid(decoded) {
+		return string(decoded)
+	}
+	return string(bytes.ToValidUTF8(b, []byte("?")))
+}
+
+// encodeCString 编码定长 C 字符串。dev_name 使用 GBK,以兼容 ZLVircom/厂家工具;
+// 其他字符串字段保持原始 UTF-8/ASCII 字节语义。
+func encodeCString(f Field, value string) ([]byte, error) {
+	if f.Name != "dev_name" {
+		return []byte(value), nil
+	}
+	encoded, err := simplifiedchinese.GBK.NewEncoder().Bytes([]byte(value))
+	if err != nil {
+		return nil, fmt.Errorf("%s:需可按 GBK 编码:%w", f.Name, err)
+	}
+	return encoded, nil
 }
 
 // parseBit 解析位值,接受 0/1/true/false/on/off/yes/no。

@@ -12,13 +12,22 @@ go build -o zlan .          # 本地构建
 # 或 go install(若已发布到模块仓库)
 ```
 
+发布版从 GitHub Release 下载对应平台压缩包:
+
+- Linux: `zlan_<version>_linux_amd64.tar.gz` / `zlan_<version>_linux_arm64.tar.gz`
+- macOS: `zlan_<version>_darwin_amd64.tar.gz` / `zlan_<version>_darwin_arm64.tar.gz`
+
+Windows 暂不发布二进制。校验文件为 `checksums.txt`。
+
 ## 快速开始
 
 ```sh
 zlan discover                              # 广播发现局域网内所有设备
+zlan discover --target 192.168.1.255 --bind 192.168.1.10
 zlan info 192.168.1.200                    # 查看一台设备的完整参数
 zlan get 192.168.1.200 local_ip            # 读取单个字段(脚本友好)
 zlan set 192.168.1.200 dest_port=4196      # 修改配置(会保存并重启设备)
+zlan set 192.168.1.200 --profile modbus-tcp-rtu
 zlan reboot 192.168.1.200                  # 重启
 zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首次配置)
 ```
@@ -40,12 +49,30 @@ zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首
 
 `<target>` 为设备 IP 或 DevID(MAC);用 `--serial <路径>` 时省略。
 
+## 现场常用 profile
+
+`set --profile modbus-tcp-rtu` 会套用 ZLAN7110M 作为 Modbus TCP → RTU 网关的常用配置:
+
+| 字段 | 值 |
+|---|---|
+| `work_mode` | `tcp-server` |
+| `local_port` | `502` |
+| `app_proto` | `modbus` |
+| `baud` / `parity` / `data_bits` | `9600` / `none` / `8` |
+
+显式传入的 `field=value` 会覆盖 profile 中同名字段。
+
 ## 两条通道
 
 - **UDP(默认)**:设备已联网时用,`zlan <命令> <IP|DevID>`。
 - **串口**:IP 配错连不上时救砖、首次本地配置,加 `--serial <路径> --baud <波特率>`(波特率须匹配设备当前值;`zlan ports` 查路径,macOS 选 `/dev/cu.*`)。
 
 两条通道共享同一套 167 字节参数,字段名、取值完全一致。
+
+`discover` 默认按所有网卡发定向广播;遇到多网卡/跨网段路由时,可用 `--target` 指定广播地址,
+用 `--bind` 指定本机源地址。部分真机固件只稳定响应广播查询,不一定响应 `0x04` 单播查询。
+
+设备名 `dev_name` 兼容厂家工具写入的 GBK/ANSI 中文字节;写中文设备名时也按 GBK 编码。
 
 ## 批量配置
 
