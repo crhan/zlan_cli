@@ -18,7 +18,7 @@ import (
 type WriteMode int
 
 const (
-	// WritePersist 持久保存并使生效(UDP 0x02 必重启;串口 0x07 写存重启)。
+	// WritePersist 持久保存并使生效(UDP 0x02 必重启;串口 0x03 写存,重启另走 0x07)。
 	WritePersist WriteMode = iota
 	// WriteVolatile 临时改串口参数,不保存不重启(UDP 0x03;串口 0x01)。
 	WriteVolatile

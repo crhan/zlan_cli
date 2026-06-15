@@ -1,10 +1,11 @@
-# CLAUDE.md — zlan 项目须知
+# zlan 项目 agent 须知
 
 ZLAN(上海卓岚 / zlmcu)串口服务器 / 联网模块管理 CLI。Go,双管理通道(UDP 1092 + 串口命令模式)。
 完整协议规格见 `SPEC.md`;本文件只记**会让 agent 踩坑、不可从代码常识推导**的点。
+本文件同时服务 Claude Code(`CLAUDE.md`)与 Codex(`AGENTS.md`);`AGENTS.md` 应保持为指向 `CLAUDE.md` 的软链,避免两份指令漂移。
 
 ## 架构(改哪层动哪层)
-- `internal/protocol`:参数 codec(`Param`=167 字节原始数组 + 字段注册表)+ 两种帧 + 段写模型。纯 stdlib、零 I/O。
+- `internal/protocol`:参数 codec(`Param`=167 字节原始数组 + 字段注册表)+ 两种帧 + 段写模型。零 I/O;除 `dev_name` GBK 兼容使用 `golang.org/x/text` 外,不引入传输/CLI 依赖。
 - `internal/transport`:UDP(discover/单播/monitor)+ 串口;统一 `Conn` 接口。
 - `internal/device`:编排(target 解析、读-改-写校验、批量 apply)。
 - `internal/cli`:cobra 命令薄层。

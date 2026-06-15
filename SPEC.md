@@ -1,7 +1,7 @@
 # zlan CLI 施工图(SPEC）
 
 ZLAN（上海卓岚 / zlmcu）串口服务器 / 联网模块管理命令行工具。
-本文件是写代码前的权威依据。任何与本文不符的实现以本文为准；本文与设备真机行为不符的，以真机为准并回写本文 + `CLAUDE.md`。
+本文件是写代码前的权威依据。任何与本文不符的实现以本文为准；本文与设备真机行为不符的，以真机为准并回写本文 + agent 须知(`CLAUDE.md`/`AGENTS.md`)。
 
 数据来源：
 - 《卓岚联网产品 UDP 管理端口协议》ZL DUI 20100427.1.0 Rev.3（下称 **UDP 文档**）
@@ -331,10 +331,10 @@ zlan/
       errors.go                 ExitError + 退出码映射
       output.go                 table(tabwriter)/json/color helper
     config/config.go            os.UserConfigDir + 优先级链
-  CLAUDE.md  README.md  SPEC.md
+  CLAUDE.md  AGENTS.md(软链)  README.md  SPEC.md
 ```
 
-依赖：`spf13/cobra` + `golang.org/x/term` + `go.bug.st/serial`，其余 stdlib。
+依赖：`spf13/cobra` + `go.bug.st/serial` + `golang.org/x/term` + `golang.org/x/text` + `gopkg.in/yaml.v3`，其余 stdlib。
 
 ---
 
@@ -373,7 +373,7 @@ UDP 应答字段锚点（UDP §3.1，尾部 `…8a b6 e6` 对齐到 @100，确�
 
 ---
 
-## 18. 项目坑清单(写入 CLAUDE.md)
+## 18. 项目坑清单(写入 agent 须知)
 
 - 96/97 = recon/keep_alive(§9 证据链),**勿按 C 结构体改回**。
 - parity 1/2 两文档矛盾,代码标"待验证"。

@@ -114,4 +114,4 @@ IO 控制、中心服务器上报功能依赖未提供的外部文档,**不在�
 ## 文档
 
 - `SPEC.md` —— 完整协议规格、偏移表、命令语义、golden 向量、待验证清单。
-- `CLAUDE.md` —— 开发须知与协议铁坑。
+- `CLAUDE.md` / `AGENTS.md` —— Claude Code 与 Codex 共用的开发须知与协议铁坑(`AGENTS.md` 为软链)。
