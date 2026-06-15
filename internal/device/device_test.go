@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"gopkg.in/yaml.v3"
+
 	"zlan/internal/protocol"
 	"zlan/internal/transport"
 )
@@ -101,6 +103,151 @@ func TestSetRejectsInvalidAndReadOnly(t *testing.T) {
 	}
 	if f.writes != 0 {
 		t.Fatal("非法 set 不应写入设备")
+	}
+}
+
+func TestPlanCopyPreservesTargetIdentityAndCopiesWritableBytes(t *testing.T) {
+	var source, target protocol.Param
+	copy(source[31:37], []byte{0x5a, 0x4c, 0x6f, 0x73, 0xcc, 0xd6})
+	copy(target[31:37], []byte{0x5a, 0x4c, 0x6f, 0x73, 0xcc, 0xd7})
+	source[103] = 0x44 // ver, read-only
+	target[103] = 0x55
+	if err := source.SetField("local_ip", "10.0.0.9"); err != nil {
+		t.Fatal(err)
+	}
+	if err := target.SetField("local_ip", "10.0.0.10"); err != nil {
+		t.Fatal(err)
+	}
+	if err := source.SetField("baud", "115200"); err != nil {
+		t.Fatal(err)
+	}
+	source[115] = 0xaa // user_param, opaque but writable through copy
+
+	res, err := PlanCopy(source, target, CopyOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.After.DevID() != target.DevID() {
+		t.Fatal("copy 不应覆盖目标 DevID")
+	}
+	if res.After[103] != target[103] {
+		t.Fatal("copy 不应覆盖目标 ver")
+	}
+	if got, _ := res.After.GetField("local_ip"); got != "10.0.0.9" {
+		t.Fatalf("local_ip=%s", got)
+	}
+	if got, _ := res.After.GetField("baud"); got != "115200" {
+		t.Fatalf("baud=%s", got)
+	}
+	if res.After[115] != 0xaa {
+		t.Fatalf("user_param 未复制:0x%02x", res.After[115])
+	}
+	if !res.NetworkField {
+		t.Fatal("复制 local_ip 应判为网络字段")
+	}
+}
+
+func TestPlanCopyExcludeAndOverride(t *testing.T) {
+	var source, target protocol.Param
+	copy(source[31:37], []byte{0, 1, 2, 3, 4, 5})
+	copy(target[31:37], []byte{0, 1, 2, 3, 4, 6})
+	if err := source.SetField("local_ip", "10.0.0.9"); err != nil {
+		t.Fatal(err)
+	}
+	if err := target.SetField("local_ip", "10.0.0.10"); err != nil {
+		t.Fatal(err)
+	}
+	if err := source.SetField("baud", "115200"); err != nil {
+		t.Fatal(err)
+	}
+	if err := source.SetField("func_en", "0xff"); err != nil {
+		t.Fatal(err)
+	}
+
+	res, err := PlanCopy(source, target, CopyOptions{
+		Exclude:   []string{"local_ip", "func_en.need_password"},
+		Overrides: map[string]string{"baud": "57600"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := res.After.GetField("local_ip"); got != "10.0.0.10" {
+		t.Fatalf("local_ip 应保留目标值,got %s", got)
+	}
+	if got, _ := res.After.GetField("baud"); got != "57600" {
+		t.Fatalf("baud override=%s", got)
+	}
+	if got, _ := res.After.GetField("func_en"); got != "0xfb" {
+		t.Fatalf("func_en bit exclude got %s", got)
+	}
+}
+
+func TestPlanCopyRejectsSameDevice(t *testing.T) {
+	var source, target protocol.Param
+	copy(source[31:37], []byte{0, 1, 2, 3, 4, 5})
+	copy(target[31:37], []byte{0, 1, 2, 3, 4, 5})
+	if _, err := PlanCopy(source, target, CopyOptions{}); err == nil {
+		t.Fatal("复制到相同 DevID 应报错")
+	}
+	if _, err := PlanCopy(source, target, CopyOptions{AllowSameDevice: true}); err != nil {
+		t.Fatalf("import 恢复同一 DevID 应允许:%v", err)
+	}
+}
+
+func TestCopyConfigNoWriteWhenUnchanged(t *testing.T) {
+	var source, target protocol.Param
+	copy(source[31:37], []byte{0, 1, 2, 3, 4, 5})
+	copy(target[31:37], []byte{0, 1, 2, 3, 4, 6})
+	f := &fakeConn{param: target}
+	res, err := CopyConfig(f, nil, source, CopyOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Changed) != 0 {
+		t.Fatalf("changed=%v", res.Changed)
+	}
+	if f.writes != 0 {
+		t.Fatalf("无变化不应写入,writes=%d", f.writes)
+	}
+}
+
+func TestExportedConfigRoundTrip(t *testing.T) {
+	var p protocol.Param
+	copy(p[31:37], []byte{0x5a, 0x4c, 0x6f, 0x73, 0xcc, 0xd6})
+	if err := p.SetField("local_ip", "10.0.0.9"); err != nil {
+		t.Fatal(err)
+	}
+	p[115] = 0xaa
+
+	cfg := NewExportedConfig(p)
+	data, err := yaml.Marshal(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, parsed, err := ParseExportedConfig(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != p {
+		t.Fatal("export/import 后参数块不一致")
+	}
+	if parsed.SourceDevID != "5a:4c:6f:73:cc:d6" {
+		t.Fatalf("source_devid=%s", parsed.SourceDevID)
+	}
+	if parsed.Fields["local_ip"] != "10.0.0.9" {
+		t.Fatalf("fields.local_ip=%s", parsed.Fields["local_ip"])
+	}
+}
+
+func TestParseExportedConfigValidation(t *testing.T) {
+	if _, _, err := ParseExportedConfig([]byte("schema_version: 99\nparam_hex: \"00\"\n")); err == nil {
+		t.Fatal("未知 schema_version 应报错")
+	}
+	if _, _, err := ParseExportedConfig([]byte("schema_version: 1\nparam_hex: nope\n")); err == nil {
+		t.Fatal("非法 hex 应报错")
+	}
+	if _, _, err := ParseExportedConfig([]byte("schema_version: 1\nparam_hex: \"00\"\n")); err == nil {
+		t.Fatal("错误长度应报错")
 	}
 }
 

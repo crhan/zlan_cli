@@ -171,6 +171,9 @@ zlan get     <target> <field>             读单字段（脚本友好）；get <
 zlan set     <target> <k=v>...            改配置（持久，会重启），破坏性
 zlan set     <target> --profile modbus-tcp-rtu      套用 Modbus TCP→RTU 常用网关配置
 zlan tune    <target> baud=.. parity=..   临时串口参数（不存不重启，断电恢复）
+zlan copy    <source> <target> [k=v]...   复制 source 可写配置到 target（默认 dry-run；--confirm 写入）
+zlan export  <target> [-o file]           导出离线配置文件（param_hex 为权威原始参数块）
+zlan import  <target> -f file [k=v]...    从配置文件导入到 target（默认 dry-run；--confirm 写入）
 zlan reboot  <target>                     重启
 zlan status  <target>                     连接状态（轻量探针，脚本 watch 用）
 zlan monitor [--listen :1092]             被动监听设备 0x01 周期上报；可对外网设备改参
@@ -188,6 +191,8 @@ zlan completion [bash|zsh|fish]           shell 补全（cobra 自动）
 | info/get | 0x04 单播 / 0x00 广播匹配 | 0x00 读 | 否 | 否 |
 | set | 0x02（读-改-写整块） | 0x03（写+存；网络字段自动重启） | UDP:是 | 是 |
 | tune | 0x03 | 0x01（写不存） | 否 | 否 |
+| copy | 源/目标读参后按 set 逻辑写 target；保留 target 的 devid/只读字段 | 暂不支持 `--serial`（需同时访问两台） | 依字段 | 是 |
+| export/import | export 单台读参生成文件；import 读文件后按 copy 逻辑写 target | import 支持单台串口目标；export 支持串口读参 | 依字段 | 是 |
 | reboot | 0x04 读回→改 0x02 回发（§3.5） | 0x07 `07 1f 01 00`（§3.7） | 是 | UDP:是 |
 | status | 0x04 读 @61 | 0x00 pos=61 len=1 | 否 | 否 |
 | monitor | 监听端口收 0x01；改参把 0x01→0x02 回发 | — | — | — |
@@ -253,7 +258,7 @@ zlan completion [bash|zsh|fish]           shell 补全（cobra 自动）
 
 ## 10. 安全护栏
 
-- **破坏性操作分级**：单台 `set/reboot/tune` → `-y` 可跳过 yes/no 确认；**批量 `apply` 或改网络类字段** → 需 `--confirm`，非 TTY 无 `--confirm` 直接报错退出（绝不阻塞）。
+- **破坏性操作分级**：单台 `set/reboot/tune` → `-y` 可跳过 yes/no 确认；**批量 `apply`、`copy/import` 写入或改网络类字段** → 需 `--confirm`，非 TTY 无 `--confirm` 直接报错退出（绝不阻塞）。
 - **确认提示明说后果**：`set: 将保存配置并重启设备(断开 TCP 连接)。继续?`，不是干巴巴 "Are you sure?"。
 - **改 IP 不误报**：写网络字段后先报"写入完成、设备重启中"；可达性确认为**尽力而为**，跨网段失败提示"设备可能已切到新网段，请在对应网段 `zlan discover`"，**退出码 0 + 警告**，绝不用超时码。
 - `dhcp_en=1` 时 set `local_ip` 给出无意义警告（DHCP 会覆盖）。

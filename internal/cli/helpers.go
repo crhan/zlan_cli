@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -92,18 +91,9 @@ func parseWriteArgs(g *globalFlags, args []string, allowEmpty bool) (host string
 	if len(kvArgs) == 0 && !allowEmpty {
 		return "", nil, fmt.Errorf("至少给一个 field=value")
 	}
-	kvs = make(map[string]string, len(kvArgs))
-	for _, a := range kvArgs {
-		k, v, ok := strings.Cut(a, "=")
-		if !ok || k == "" {
-			return "", nil, fmt.Errorf("参数格式应为 field=value:%q", a)
-		}
-		if _, ok := protocol.FieldByName(k); !ok {
-			if _, ok := protocol.BitFieldByName(k); !ok {
-				return "", nil, fmt.Errorf("未知字段:%s(用 zlan get --list-fields 查看)", k)
-			}
-		}
-		kvs[k] = v
+	kvs, err = parseAssignments(kvArgs)
+	if err != nil {
+		return "", nil, err
 	}
 	return host, kvs, nil
 }

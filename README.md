@@ -28,6 +28,8 @@ zlan info 192.168.1.200                    # 查看一台设备的完整参数
 zlan get 192.168.1.200 local_ip            # 读取单个字段(脚本友好)
 zlan set 192.168.1.200 dest_port=4196      # 修改配置(会保存并重启设备)
 zlan set 192.168.1.200 --profile modbus-tcp-rtu
+zlan copy 192.168.1.200 192.168.1.201      # 复制配置(dry-run 预览)
+zlan export 192.168.1.200 -o backup.yaml   # 导出离线配置文件
 zlan reboot 192.168.1.200                  # 重启
 zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首次配置)
 ```
@@ -41,6 +43,9 @@ zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首
 | `get <target> <field>` | 读取单字段;`get --list-fields` 列出所有字段 |
 | `set <target> <k=v>...` | 修改配置(保存并重启设备) |
 | `tune <target> <k=v>...` | 临时设串口参数(不保存、不重启,断电恢复) |
+| `copy <source> <target> [k=v]...` | 复制一台设备配置到另一台(默认 dry-run;别名 `clone`/`cp`) |
+| `export <target> -o <file>` | 导出可离线携带的配置文件 |
+| `import <target> -f <file> [k=v]...` | 从配置文件导入到设备(默认 dry-run) |
 | `reboot <target>` | 重启设备 |
 | `status <target>` | TCP 连接状态(轻量探针,适合 `watch`) |
 | `monitor` | 被动监听设备周期上报(0x01) |
@@ -61,6 +66,25 @@ zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首
 | `baud` / `parity` / `data_bits` | `9600` / `none` / `8` |
 
 显式传入的 `field=value` 会覆盖 profile 中同名字段。
+
+## 复制配置
+
+`copy` 会从 source 复制可写配置字段到 target,保留 target 自己的 `devid`、状态、固件版本和能力位。
+默认只预览 diff,加 `--confirm` 才实际写入并重启 target。若源/目标不方便同时在线,用 `export` / `import` 分两步完成。
+
+```sh
+zlan copy 192.168.1.200 192.168.1.201
+zlan copy 192.168.1.200 192.168.1.201 local_ip=192.168.1.201 --confirm
+zlan copy 192.168.1.200 192.168.1.201 --exclude local_ip --confirm
+
+zlan export 192.168.1.200 -o zlan-200.yaml
+zlan import 192.168.1.201 -f zlan-200.yaml
+zlan import 192.168.1.201 -f zlan-200.yaml local_ip=192.168.1.201 --confirm
+zlan import --serial /dev/cu.usbserial-1410 -f backup.yaml --confirm
+```
+
+复制 `local_ip` 可能造成两台设备 IP 冲突;替换设备时可显式覆盖目标 `local_ip`,批量铺同类配置时可 `--exclude local_ip`。
+导出文件中 `param_hex` 是 import 使用的权威原始参数块;`fields` 只是便于人工查看的快照。
 
 ## 两条通道
 
