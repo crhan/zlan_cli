@@ -44,3 +44,6 @@ IO 控制(UDP 0x05/0x06)、中心服务器上报(0x09/0x0a)依赖未提供的外
 - Codex 出沙箱 UDP 权限走 `.codex/rules/zlan-read.rules`;只允许固定安装路径
   `/Users/ruohan.chen/go/bin/zlan discover|scan|ls`。不要 allow `go run`、`dist/zlan`
   或 workspace 内任意二进制:agent 可先改可写二进制再借 trusted prefix 出沙箱。
+- Codex 出沙箱研发验证权限走 `.codex/rules/zlan-dev.rules`;用固定 Go 工具链
+  `/opt/homebrew/bin/go test|vet|fmt|build ...`。不要 allow `make ci`、release-check、
+  goreleaser 或 `go run`,这些会把外部发布工具链一起放开。

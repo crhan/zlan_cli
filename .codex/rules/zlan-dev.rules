@@ -1,0 +1,99 @@
+# Project-local Codex execpolicy rules for the normal Go development loop.
+#
+# These rules intentionally use the absolute Go toolchain path. Do not replace
+# it with "go", "make", or a workspace-local wrapper: those are easier to
+# shadow or modify before requesting host execution.
+
+prefix_rule(
+    pattern = [
+        "/opt/homebrew/bin/go",
+        "test",
+        [".", "./...", "./internal/cli", "./internal/device", "./internal/protocol", "./internal/transport"],
+    ],
+    decision = "allow",
+    justification = "Run trusted ZLAN Go tests during local development.",
+    match = [
+        ["/opt/homebrew/bin/go", "test", "./..."],
+        ["/opt/homebrew/bin/go", "test", "./internal/protocol"],
+        ["/opt/homebrew/bin/go", "test", "./internal/transport", "-run", "TestUDPConnReadParam"],
+    ],
+    not_match = [
+        ["go", "test", "./..."],
+        ["make", "test"],
+        ["/opt/homebrew/bin/go", "run", "."],
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "/opt/homebrew/bin/go",
+        "vet",
+        [".", "./..."],
+    ],
+    decision = "allow",
+    justification = "Run trusted ZLAN Go vet checks during local development.",
+    match = [
+        ["/opt/homebrew/bin/go", "vet", "./..."],
+        ["/opt/homebrew/bin/go", "vet", "."],
+    ],
+    not_match = [
+        ["go", "vet", "./..."],
+        ["make", "vet"],
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "/opt/homebrew/bin/go",
+        "fmt",
+        [".", "./..."],
+    ],
+    decision = "allow",
+    justification = "Format trusted ZLAN Go packages during local development.",
+    match = [
+        ["/opt/homebrew/bin/go", "fmt", "./..."],
+        ["/opt/homebrew/bin/go", "fmt", "."],
+    ],
+    not_match = [
+        ["go", "fmt", "./..."],
+        ["gofmt", "-w", "."],
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "/opt/homebrew/bin/go",
+        "build",
+        "./...",
+    ],
+    decision = "allow",
+    justification = "Compile all trusted ZLAN Go packages during local development.",
+    match = [
+        ["/opt/homebrew/bin/go", "build", "./..."],
+    ],
+    not_match = [
+        ["go", "build", "./..."],
+        ["make", "build"],
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "/opt/homebrew/bin/go",
+        "build",
+        "-trimpath",
+        "-o",
+        "dist/zlan",
+        ".",
+    ],
+    decision = "allow",
+    justification = "Build the local ZLAN CLI artifact during development.",
+    match = [
+        ["/opt/homebrew/bin/go", "build", "-trimpath", "-o", "dist/zlan", "."],
+    ],
+    not_match = [
+        ["go", "build", "-trimpath", "-o", "dist/zlan", "."],
+        ["make", "build"],
+        ["/opt/homebrew/bin/go", "run", "github.com/goreleaser/goreleaser/v2@v2.16.0"],
+    ],
+)
