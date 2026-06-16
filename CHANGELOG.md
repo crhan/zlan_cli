@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.6.0 - 2026-06-17
+
 - Add `mqtt publish` / `mqtt bridge` to publish Modbus register reads to an MQTT broker.
 - Support Home Assistant MQTT Discovery payloads for CLI-driven RS485 sensor bridges.
 
