@@ -30,7 +30,8 @@ func NewRootCmd() *cobra.Command {
 		Long: `zlan —— 通过 UDP 管理端口(1092)或串口命令模式管理卓岚联网模块。
 
 示例:
-  zlan discover                              广播发现局域网设备
+  zlan discover                              发现局域网设备
+  zlan capabilities                          对比当前设备能力位
   zlan info 192.168.1.200                    查看设备完整参数
   zlan set 192.168.1.200 dest_port=4196      改配置(会重启设备)
   zlan copy 192.168.1.200 192.168.1.201      复制配置(dry-run)
@@ -61,6 +62,7 @@ func NewRootCmd() *cobra.Command {
 
 	root.AddCommand(
 		newDiscoverCmd(g),
+		newCapabilitiesCmd(g),
 		newInfoCmd(g),
 		newGetCmd(g),
 		newSetCmd(g),
