@@ -31,6 +31,7 @@ zlan set 192.168.1.200 dest_port=4196      # 修改配置(会保存并重启设�
 zlan set 192.168.1.200 --profile modbus-tcp-rtu
 zlan reg read 192.168.1.200 0x0001 2 --unit 11
 zlan reg write 192.168.1.200 0x0002 11 --unit 1
+zlan mqtt publish 192.168.1.200 0x0000 --unit 13 --broker localhost:1883 --topic zlan/water/rsds19y/state --field temperature --scale 0.1
 zlan copy 192.168.1.200 192.168.1.201      # 复制配置(dry-run 预览)
 zlan export 192.168.1.200 -o backup.yaml   # 导出离线配置文件
 zlan reboot 192.168.1.200                  # 重启
@@ -53,6 +54,7 @@ zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首
 | `reboot <target>` | 重启设备 |
 | `status <target>` | TCP 连接状态(轻量探针,适合 `watch`) |
 | `reg read/write/poll/session <target> ...` | 经 ZLAN 数据通道读写/轮询 Modbus 寄存器 |
+| `mqtt publish/bridge <target> ...` | 读取 Modbus 寄存器并发布到 MQTT/HA Discovery |
 | `monitor` | 被动监听设备周期上报(0x01) |
 | `apply -f <yaml>` | 按清单批量配置(按 DevID 匹配) |
 | `ports` | 列出本机可用串口 |
@@ -93,6 +95,35 @@ zlan reg session 192.168.1.200 --unit 11
 当前只主动连接 `work_mode=tcp-server` 的设备。`tcp-client` / `udp` 模式没有本机可直接打开的数据
 TCP 监听,需先调整配置,或在对应服务器侧操作。若设备参数不可信,可用 `--mode modbus-tcp|rtu-over-tcp`
 和 `--data-host` / `--data-port` 手动覆盖。
+
+## MQTT 上送
+
+`mqtt` 会复用 `reg` 的数据通道解析逻辑,先读取 Modbus 寄存器,再将读数封成 JSON 发布到
+MQTT broker。它不是写入设备内部 JSON/MQTT 采集规则,而是由 CLI 作为手动验证或外部调度的桥接进程,
+适合先把 RS485 读数接入 Home Assistant MQTT。
+
+```sh
+# 一次性发布温度,raw=250 会按 scale=0.1 转为 temperature=25.0
+zlan mqtt publish 192.168.15.47 0x0000 \
+  --unit 13 --broker localhost:1883 \
+  --username ruohan.chen --password-env MQTT_PASSWORD \
+  --topic zlan/water/rsds19y/state \
+  --field temperature --scale 0.1 --retain
+
+# 持续桥接,每 2 秒读一次并发布;--times 0 表示一直运行
+zlan mqtt bridge 192.168.15.47 0x0000 \
+  --unit 13 --interval 2s --topic zlan/water/rsds19y/state \
+  --field temperature --scale 0.1 --retain
+
+# 同时发布 Home Assistant MQTT Discovery 配置(retained)
+zlan mqtt publish 192.168.15.47 0x0000 \
+  --unit 13 --ha-discovery --name "RSDS19Y Temperature" \
+  --unique-id zlan_rsds19y_temperature --device-class temperature \
+  --unit-of-measurement °C --field temperature --scale 0.1
+```
+
+MQTT 只实现 v3.1.1 QoS0 publish,支持用户名/密码认证。密码可用 `--password-env` 或
+`--password-file` 提供,避免在进程参数里明文暴露。
 
 ## 复制配置
 

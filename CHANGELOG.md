@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Add `mqtt publish` / `mqtt bridge` to publish Modbus register reads to an MQTT broker.
+- Support Home Assistant MQTT Discovery payloads for CLI-driven RS485 sensor bridges.
+
 ## v0.3.0 - 2026-06-16
 
 - Add `reg read` / `reg write` for direct Modbus register access through ZLAN data channels.
