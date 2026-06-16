@@ -22,8 +22,9 @@ Windows 暂不发布二进制。校验文件为 `checksums.txt`。
 ## 快速开始
 
 ```sh
-zlan discover                              # 广播发现局域网内所有设备
+zlan discover                              # 发现局域网内所有设备
 zlan discover --target 192.168.1.255 --bind 192.168.1.10
+zlan capabilities                          # 对比当前设备能力位
 zlan info 192.168.1.200                    # 查看一台设备的完整参数
 zlan get 192.168.1.200 local_ip            # 读取单个字段(脚本友好)
 zlan set 192.168.1.200 dest_port=4196      # 修改配置(会保存并重启设备)
@@ -40,7 +41,8 @@ zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首
 
 | 命令 | 说明 |
 |---|---|
-| `discover` | 广播发现局域网设备(别名 `scan`/`ls`) |
+| `discover` | 发现局域网设备(别名 `scan`/`ls`) |
+| `capabilities [target]` | 查看/对比设备能力位 |
 | `info <target>` | 读取并分组展示完整参数 |
 | `get <target> <field>` | 读取单字段;`get --list-fields` 列出所有字段 |
 | `set <target> <k=v>...` | 修改配置(保存并重启设备) |
@@ -50,7 +52,7 @@ zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首
 | `import <target> -f <file> [k=v]...` | 从配置文件导入到设备(默认 dry-run) |
 | `reboot <target>` | 重启设备 |
 | `status <target>` | TCP 连接状态(轻量探针,适合 `watch`) |
-| `reg read/write <target> ...` | 经 ZLAN 数据通道读写 Modbus 寄存器 |
+| `reg read/write/poll/session <target> ...` | 经 ZLAN 数据通道读写/轮询 Modbus 寄存器 |
 | `monitor` | 被动监听设备周期上报(0x01) |
 | `apply -f <yaml>` | 按清单批量配置(按 DevID 匹配) |
 | `ports` | 列出本机可用串口 |
@@ -81,7 +83,12 @@ zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首
 zlan reg read 192.168.1.200 0x0001 2 --unit 11
 zlan reg read 192.168.1.200 0x0001 --kind input --unit 11 --json
 zlan reg write 192.168.1.200 0x0002 0x000b --unit 1
+zlan reg poll 192.168.1.200 0x0001 2 --unit 11 --interval 1s
+zlan reg session 192.168.1.200 --unit 11
 ```
+
+`reg poll` 建立一条数据通道长连接,按 `--interval` 反复读取同一组寄存器;`--times N`
+可限制采样次数,默认一直运行到 Ctrl-C。`--json` 模式每次采样输出一行 JSON。
 
 当前只主动连接 `work_mode=tcp-server` 的设备。`tcp-client` / `udp` 模式没有本机可直接打开的数据
 TCP 监听,需先调整配置,或在对应服务器侧操作。若设备参数不可信,可用 `--mode modbus-tcp|rtu-over-tcp`
@@ -113,8 +120,9 @@ zlan import --serial /dev/cu.usbserial-1410 -f backup.yaml --confirm
 
 两条通道共享同一套 167 字节参数,字段名、取值完全一致。
 
-`discover` 默认按所有网卡发定向广播;遇到多网卡/跨网段路由时,可用 `--target` 指定广播地址,
-用 `--bind` 指定本机源地址。部分真机固件只稳定响应广播查询,不一定响应 `0x04` 单播查询。
+`discover` 默认按所有本机 IPv4 网段发定向广播,并对较小本地网段补充 UDP 单播探测;
+遇到多网卡/跨网段路由时,可用 `--target` 指定广播地址,用 `--bind` 指定本机源地址。
+部分真机固件只稳定响应广播查询,也有设备只响应 `0x04` 单播查询。
 
 设备名 `dev_name` 兼容厂家工具写入的 GBK/ANSI 中文字节;写中文设备名时也按 GBK 编码。
 

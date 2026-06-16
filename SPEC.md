@@ -165,7 +165,8 @@ ZLAN（上海卓岚 / zlmcu）串口服务器 / 联网模块管理命令行工�
 ## 6. 命令树与语义
 
 ```
-zlan discover [--timeout] [--target IP --bind IP]   广播发现（UDP），表格 DEVID/NAME/IP/MODE/BAUD/VER/STATUS
+zlan discover [--timeout] [--target IP --bind IP]   发现设备（UDP 广播 + 小网段单播探测），表格 DEVID/NAME/IP/MODE/BAUD/VER/STATUS
+zlan capabilities [target]             读取/对比 func_sel、func_sel2 能力位
 zlan info    <target>                     读完整参数，分组展示
 zlan get     <target> <field>             读单字段（脚本友好）；get <target> --list-fields 列字段
 zlan set     <target> <k=v>...            改配置（持久，会重启），破坏性
@@ -176,6 +177,10 @@ zlan export  <target> [-o file]           导出离线配置文件（param_hex �
 zlan import  <target> -f file [k=v]...    从配置文件导入到 target（默认 dry-run；--confirm 写入）
 zlan reboot  <target>                     重启
 zlan status  <target>                     连接状态（轻量探针，脚本 watch 用）
+zlan reg read <target> <addr> [count]     经数据通道读取 Modbus 寄存器
+zlan reg write <target> <addr> <value...> 经数据通道写入 Modbus holding register
+zlan reg poll <target> <addr> [count]     建立数据通道长连接，定时循环读取寄存器
+zlan reg session <target>                 建立数据通道长连接，交互式读写寄存器
 zlan monitor [--listen :1092]             被动监听设备 0x01 周期上报；可对外网设备改参
 zlan apply   -f devices.yaml [--dry-run] [--confirm]   批量声明式配置
 zlan ports                                列出本机可用串口
@@ -187,7 +192,8 @@ zlan completion [bash|zsh|fish]           shell 补全（cobra 自动）
 
 | CLI | UDP 通道 | 串口通道 | 重启 | 保存 |
 |---|---|---|---|---|
-| discover | 0x00 广播 | —（串口单台直接 info） | 否 | 否 |
+| discover | 0x00 广播 + 0x04 小网段单播探测 | —（串口单台直接 info） | 否 | 否 |
+| capabilities | 读 func_sel/func_sel2 能力位;无 target 时先 discover 汇总 | 0x00 读 @104/@112 或整块读 | 否 | 否 |
 | info/get | 0x04 单播 / 0x00 广播匹配 | 0x00 读 | 否 | 否 |
 | set | 0x02（读-改-写整块） | 0x03（写+存；网络字段自动重启） | UDP:是 | 是 |
 | tune | 0x03 | 0x01（写不存） | 否 | 否 |
@@ -195,6 +201,8 @@ zlan completion [bash|zsh|fish]           shell 补全（cobra 自动）
 | export/import | export 单台读参生成文件；import 读文件后按 copy 逻辑写 target | import 支持单台串口目标；export 支持串口读参 | 依字段 | 是 |
 | reboot | 0x04 读回→改 0x02 回发（§3.5） | 0x07 `07 1f 01 00`（§3.7） | 是 | UDP:是 |
 | status | 0x04 读 @61 | 0x00 pos=61 len=1 | 否 | 否 |
+| reg read/write | 先管理通道读参数,再连接数据 TCP 通道跑 Modbus TCP 或 RTU-over-TCP | 暂不支持 | 否 | 依 Modbus 写入 |
+| reg poll/session | 同上,但保持数据 TCP 长连接;断线时按需重连 | 暂不支持 | 否 | 依 Modbus 写入 |
 | monitor | 监听端口收 0x01；改参把 0x01→0x02 回发 | — | — | — |
 | apply | 每台走 set 逻辑（按 devid 匹配） | （一般 UDP） | 依字段 | 是 |
 
@@ -204,8 +212,9 @@ zlan completion [bash|zsh|fish]           shell 补全（cobra 自动）
 （`--quiet` 压 `--verbose`；密码不走 flag，见 §11）
 
 `discover` 额外支持 `--target <broadcast-ip>`（可重复/逗号分隔）、`--bind <local-ip>`、
-`--bind-port <port>`。默认仍按所有 up 且支持广播的 IPv4 网卡发定向广播并追加
-`255.255.255.255` 兜底；显式 flag 用于复现现场多网卡/跨网段扫描。
+`--bind-port <port>`。默认按所有 up 且支持广播的 IPv4 网段发定向广播并追加
+`255.255.255.255` 兜底；对主机数不超过 512 的本地网段补充 `0x04` 单播探测,
+用于发现不响应广播但响应单播查询的设备。显式 flag 用于复现现场多网卡/跨网段扫描。
 
 `set --profile modbus-tcp-rtu` 展开为:
 `work_mode=tcp-server local_port=502 app_proto=modbus baud=9600 parity=none data_bits=8`。
