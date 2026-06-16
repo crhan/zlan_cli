@@ -48,7 +48,7 @@ func newRegCmd(g *globalFlags) *cobra.Command {
 	cmd.PersistentFlags().StringVar(&opt.dataHost, "data-host", "", "覆盖数据通道主机/IP(默认取设备 local_ip)")
 	cmd.PersistentFlags().IntVar(&opt.dataPort, "data-port", 0, "覆盖数据通道端口(默认取设备 local_port)")
 
-	cmd.AddCommand(newRegReadCmd(g, opt), newRegWriteCmd(g, opt))
+	cmd.AddCommand(newRegReadCmd(g, opt), newRegWriteCmd(g, opt), newRegSessionCmd(g, opt), newRegPollCmd(g, opt))
 	return cmd
 }
 
