@@ -71,8 +71,9 @@ func CopyConfig(conn transport.Conn, snapshot *protocol.Param, source protocol.P
 	if err := conn.WriteParam(want, res.Changed, transport.WritePersist); err != nil {
 		return nil, err
 	}
-	if res.NetworkField {
-		return res, nil
+	res.RebootExpected = transport.PersistentWriteReboots(conn)
+	if res.RebootExpected || res.NetworkField {
+		return res, nil // 重启在即,跳过即时读回(避免抢跑/跨网段误判),与 device.Set 一致
 	}
 	readback, err := conn.ReadParam()
 	if err != nil {

@@ -16,6 +16,7 @@ import (
 // readErrAfterWrite 模拟"写后设备重启、读不回"。
 type fakeConn struct {
 	param             protocol.Param
+	reads             int
 	writes            int
 	lastMode          transport.WriteMode
 	lastChanged       []string
@@ -24,6 +25,7 @@ type fakeConn struct {
 }
 
 func (f *fakeConn) ReadParam() (protocol.Param, error) {
+	f.reads++
 	if f.readErrAfterWrite && f.written {
 		return protocol.Param{}, errors.New("设备重启,无应答")
 	}
@@ -41,6 +43,12 @@ func (f *fakeConn) WriteParam(p protocol.Param, changed []string, mode transport
 
 func (f *fakeConn) Reboot() error { return nil }
 func (f *fakeConn) Close() error  { return nil }
+
+type fakeRebootConn struct {
+	fakeConn
+}
+
+func (f *fakeRebootConn) PersistentWriteReboots() bool { return true }
 
 func TestSetNonNetworkVerified(t *testing.T) {
 	f := &fakeConn{}
@@ -73,6 +81,51 @@ func TestSetNetworkSkipsVerify(t *testing.T) {
 	}
 	if res.Verified {
 		t.Fatal("网络字段应跳过即时读回校验")
+	}
+}
+
+func TestSetUDPPersistSkipsImmediateVerify(t *testing.T) {
+	f := &fakeRebootConn{}
+	res, err := Set(f, nil, map[string]string{"work_mode": "tcp-server"}, transport.WritePersist)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !res.RebootExpected {
+		t.Fatal("UDP 持久写应标记为预期重启")
+	}
+	if res.Verified {
+		t.Fatal("预期重启时不应做即时读回校验")
+	}
+	if f.reads != 1 {
+		t.Fatalf("应只读取初始参数,不应写后立即读回; reads=%d", f.reads)
+	}
+	if got, _ := res.After.GetField("work_mode"); got != "tcp-server" {
+		t.Fatalf("after work_mode=%s", got)
+	}
+}
+
+func TestCopyConfigUDPPersistSkipsImmediateVerify(t *testing.T) {
+	f := &fakeRebootConn{}
+	var source protocol.Param
+	if err := source.SetField("local_port", "502"); err != nil {
+		t.Fatal(err)
+	}
+	// AllowSameDevice:两个零值 Param 的 DevID 相同,这里只关心重启语义。
+	res, err := CopyConfig(f, nil, source, CopyOptions{AllowSameDevice: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Changed) == 0 {
+		t.Fatal("应至少复制了 local_port,否则测不到写后行为")
+	}
+	if !res.RebootExpected {
+		t.Fatal("UDP 持久写应标记为预期重启")
+	}
+	if res.Verified {
+		t.Fatal("预期重启时不应做即时读回校验")
+	}
+	if f.reads != 1 {
+		t.Fatalf("应只读取初始参数,不应写后立即读回; reads=%d", f.reads)
 	}
 }
 
