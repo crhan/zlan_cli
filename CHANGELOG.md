@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.0 - 2026-06-16
+
+- Add `reg read` / `reg write` for direct Modbus register access through ZLAN data channels.
+- Auto-select Modbus TCP for `app_proto=modbus` and RTU-over-TCP for `app_proto=transparent`.
+- Add manual `--mode`, `--data-host`, and `--data-port` overrides for field troubleshooting.
+- Add ZLAN7110M reference docs and field notes under `docs/`, and include docs in release archives.
+
 ## v0.2.0 - 2026-06-16
 
 - Add `copy`/`clone`/`cp` to copy writable ZLAN configuration from one online device to another.

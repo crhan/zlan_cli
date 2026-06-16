@@ -38,6 +38,7 @@ archives:
       - README.md
       - SPEC.md
       - CHANGELOG.md
+      - docs/**/*
 
 checksum:
   name_template: checksums.txt

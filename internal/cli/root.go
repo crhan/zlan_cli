@@ -70,6 +70,7 @@ func NewRootCmd() *cobra.Command {
 		newImportCmd(g),
 		newRebootCmd(g),
 		newStatusCmd(g),
+		newRegCmd(g),
 		newMonitorCmd(g),
 		newPortsCmd(g),
 		newApplyCmd(g),

@@ -28,6 +28,8 @@ zlan info 192.168.1.200                    # 查看一台设备的完整参数
 zlan get 192.168.1.200 local_ip            # 读取单个字段(脚本友好)
 zlan set 192.168.1.200 dest_port=4196      # 修改配置(会保存并重启设备)
 zlan set 192.168.1.200 --profile modbus-tcp-rtu
+zlan reg read 192.168.1.200 0x0001 2 --unit 11
+zlan reg write 192.168.1.200 0x0002 11 --unit 1
 zlan copy 192.168.1.200 192.168.1.201      # 复制配置(dry-run 预览)
 zlan export 192.168.1.200 -o backup.yaml   # 导出离线配置文件
 zlan reboot 192.168.1.200                  # 重启
@@ -48,6 +50,7 @@ zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首
 | `import <target> -f <file> [k=v]...` | 从配置文件导入到设备(默认 dry-run) |
 | `reboot <target>` | 重启设备 |
 | `status <target>` | TCP 连接状态(轻量探针,适合 `watch`) |
+| `reg read/write <target> ...` | 经 ZLAN 数据通道读写 Modbus 寄存器 |
 | `monitor` | 被动监听设备周期上报(0x01) |
 | `apply -f <yaml>` | 按清单批量配置(按 DevID 匹配) |
 | `ports` | 列出本机可用串口 |
@@ -66,6 +69,23 @@ zlan info --serial /dev/cu.usbserial-1410  # 串口直连(IP 不通时救砖/首
 | `baud` / `parity` / `data_bits` | `9600` / `none` / `8` |
 
 显式传入的 `field=value` 会覆盖 profile 中同名字段。
+
+## 寄存器读写
+
+`reg` 会先读取 ZLAN 当前参数,再根据数据通道状态自动选择访问方式:
+
+- `app_proto=modbus`:连接 `local_ip:local_port`,发送 Modbus TCP。
+- `app_proto=transparent`:连接 `local_ip:local_port`,发送带 CRC 的 Modbus RTU 帧。
+
+```sh
+zlan reg read 192.168.1.200 0x0001 2 --unit 11
+zlan reg read 192.168.1.200 0x0001 --kind input --unit 11 --json
+zlan reg write 192.168.1.200 0x0002 0x000b --unit 1
+```
+
+当前只主动连接 `work_mode=tcp-server` 的设备。`tcp-client` / `udp` 模式没有本机可直接打开的数据
+TCP 监听,需先调整配置,或在对应服务器侧操作。若设备参数不可信,可用 `--mode modbus-tcp|rtu-over-tcp`
+和 `--data-host` / `--data-port` 手动覆盖。
 
 ## 复制配置
 
@@ -138,4 +158,5 @@ IO 控制、中心服务器上报功能依赖未提供的外部文档,**不在�
 ## 文档
 
 - `SPEC.md` —— 完整协议规格、偏移表、命令语义、golden 向量、待验证清单。
+- `docs/README.md` —— 官方说明书、旧版 CLI 说明与现场审计记录索引。
 - `CLAUDE.md` / `AGENTS.md` —— Claude Code 与 Codex 共用的开发须知与协议铁坑(`AGENTS.md` 为软链)。
