@@ -41,12 +41,13 @@ func IsNetworkField(name string) bool { return networkFields[name] }
 
 // SetResult 汇报一次 set 的结果。
 type SetResult struct {
-	Before       protocol.Param
-	After        protocol.Param // 期望值;若做了读回校验则为读回值
-	Changed      []string
-	NetworkField bool  // 改了网络类字段(设备重启,可能换网段)
-	Verified     bool  // 读回校验通过
-	VerifyErr    error // 读回失败原因(设备重启时常为超时,非致命)
+	Before         protocol.Param
+	After          protocol.Param // 期望值;若做了读回校验则为读回值
+	Changed        []string
+	NetworkField   bool  // 改了网络类字段(设备重启,可能换网段)
+	RebootExpected bool  // 底层通道的持久写会触发重启,跳过即时读回
+	Verified       bool  // 读回校验通过
+	VerifyErr      error // 读回失败原因(设备重启时常为超时,非致命)
 }
 
 // Set 执行读-改-写:在快照(或现读)上应用 assignments,写回,非网络字段尝试读回校验。
@@ -62,6 +63,10 @@ func Set(conn transport.Conn, snapshot *protocol.Param, assignments map[string]s
 	want := res.After
 	if err := conn.WriteParam(want, res.Changed, mode); err != nil {
 		return nil, err
+	}
+	res.RebootExpected = mode == transport.WritePersist && transport.PersistentWriteReboots(conn)
+	if res.RebootExpected {
+		return res, nil
 	}
 	if res.NetworkField {
 		return res, nil // 设备重启,跳过即时读回(避免跨网段误判失败)

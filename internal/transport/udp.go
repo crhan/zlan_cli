@@ -157,6 +157,11 @@ func Dial(addr *net.UDPAddr, timeout time.Duration, retries int) (*UDPConn, erro
 // Close 关闭连接。
 func (c *UDPConn) Close() error { return c.conn.Close() }
 
+// PersistentWriteReboots reflects the ZLAN UDP 0x02 semantics: save parameters
+// and reboot. Sending an immediate read query can race the device while it is
+// committing the write.
+func (c *UDPConn) PersistentWriteReboots() bool { return true }
+
 // ReadParam 发一对一查询(0x04),读回设备应答(0x01)的参数。
 func (c *UDPConn) ReadParam() (protocol.Param, error) {
 	var last error

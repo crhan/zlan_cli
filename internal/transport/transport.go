@@ -44,6 +44,18 @@ type Conn interface {
 	Close() error
 }
 
+// PersistentWriteReboots reports whether a persistent WriteParam makes the
+// device reboot before a readback can be trusted.
+func PersistentWriteReboots(conn Conn) bool {
+	type persistentWriteRebooter interface {
+		PersistentWriteReboots() bool
+	}
+	if c, ok := conn.(persistentWriteRebooter); ok {
+		return c.PersistentWriteReboots()
+	}
+	return false
+}
+
 // 语义化错误:把底层网络错误翻译成用户可直接行动的信息。
 var (
 	ErrNoDevice    = errors.New("没有设备应答(检查设备是否上电、是否在同一局域网/可达)")
