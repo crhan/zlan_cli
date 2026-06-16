@@ -19,8 +19,11 @@ func newDiscoverCmd(g *globalFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "discover",
 		Aliases: []string{"scan", "ls"},
-		Short:   "广播发现局域网内所有 ZLAN 设备",
-		Long: `广播发现局域网内所有 ZLAN 设备。
+		Short:   "发现局域网内所有 ZLAN 设备",
+		Long: `发现局域网内所有 ZLAN 设备。
+
+默认按每个本机 IPv4 网段发送 UDP 广播;对较小的本地网段还会补充单播探测,
+用于发现不响应广播但响应单播查询的设备。
 
 示例:
   zlan discover
@@ -30,14 +33,14 @@ func newDiscoverCmd(g *globalFlags) *cobra.Command {
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if g.serial != "" {
-				return exitErr(ExitUsage, fmt.Errorf("discover 是广播操作,不能与 --serial 同用"))
+				return exitErr(ExitUsage, fmt.Errorf("discover 是网络发现操作,不能与 --serial 同用"))
 			}
 			opt, err := parseDiscoverOptions(g.timeout, bind, bindPort, targets)
 			if err != nil {
 				return exitErr(ExitUsage, err)
 			}
 			if !g.quiet && !g.jsonOut {
-				cmd.PrintErrf("正在广播发现(UDP %d,等待 %s)...\n", protocol.MgmtPort, g.timeout)
+				cmd.PrintErrf("正在发现设备(UDP %d,等待 %s)...\n", protocol.MgmtPort, g.timeout)
 			}
 			devs, err := device.DiscoverWithOptions(cmd.Context(), opt)
 			if err != nil {
@@ -56,7 +59,7 @@ func newDiscoverCmd(g *globalFlags) *cobra.Command {
 			return renderDevices(cmd.OutOrStdout(), devs, g.jsonOut)
 		},
 	}
-	cmd.Flags().StringSliceVar(&targets, "target", nil, "广播目标 IP(可重复或逗号分隔;默认自动按网卡定向广播)")
+	cmd.Flags().StringSliceVar(&targets, "target", nil, "广播目标 IP(可重复或逗号分隔;默认自动按网段定向广播)")
 	cmd.Flags().StringVar(&bind, "bind", "", "本地绑定 IPv4 地址(默认 0.0.0.0)")
 	cmd.Flags().IntVar(&bindPort, "bind-port", 0, "本地 UDP 源端口(默认随机端口)")
 	return cmd

@@ -26,6 +26,89 @@ func TestDirectedBroadcast(t *testing.T) {
 	}
 }
 
+func TestDiscoverProbesCoverEachIPv4Network(t *testing.T) {
+	probes := discoverProbesForNetworks([]ipv4Network{
+		{ip: net.ParseIP("192.168.15.10"), mask: net.IPMask(net.ParseIP("255.255.255.0").To4())},
+		{ip: net.ParseIP("192.168.1.10"), mask: net.IPMask(net.ParseIP("255.255.255.0").To4())},
+	}, DiscoverOptions{})
+
+	if len(probes) != 2 {
+		t.Fatalf("probe count=%d, want 2", len(probes))
+	}
+	assertProbe(t, probes[0], "192.168.15.10", []string{"192.168.15.255", "255.255.255.255"}, true)
+	assertProbe(t, probes[1], "192.168.1.10", []string{"192.168.1.255", "255.255.255.255"}, true)
+	assertHasUnicastTarget(t, probes[1], "192.168.1.200")
+	assertNoUnicastTarget(t, probes[1], "192.168.1.10")
+	if got := probes[1].unicastTargets[0]; !got.Equal(net.ParseIP("192.168.1.200")) {
+		t.Fatalf("first unicast target=%v, want 192.168.1.200", got)
+	}
+}
+
+func TestDiscoverProbesRespectExplicitTarget(t *testing.T) {
+	probes := discoverProbesForNetworks([]ipv4Network{
+		{ip: net.ParseIP("192.168.15.10"), mask: net.IPMask(net.ParseIP("255.255.255.0").To4())},
+		{ip: net.ParseIP("192.168.1.10"), mask: net.IPMask(net.ParseIP("255.255.255.0").To4())},
+	}, DiscoverOptions{Targets: []net.IP{net.ParseIP("192.168.1.255")}})
+
+	if len(probes) != 1 {
+		t.Fatalf("probe count=%d, want 1", len(probes))
+	}
+	assertProbe(t, probes[0], "0.0.0.0", []string{"192.168.1.255"}, false)
+	if len(probes[0].unicastTargets) != 0 {
+		t.Fatalf("unicastTargets=%v, want none for explicit target", probes[0].unicastTargets)
+	}
+}
+
+func TestDiscoverProbesRespectExplicitBind(t *testing.T) {
+	probes := discoverProbesForNetworks([]ipv4Network{
+		{ip: net.ParseIP("192.168.15.10"), mask: net.IPMask(net.ParseIP("255.255.255.0").To4())},
+		{ip: net.ParseIP("192.168.1.10"), mask: net.IPMask(net.ParseIP("255.255.255.0").To4())},
+	}, DiscoverOptions{BindIP: net.ParseIP("192.168.1.10")})
+
+	if len(probes) != 1 {
+		t.Fatalf("probe count=%d, want 1", len(probes))
+	}
+	assertProbe(t, probes[0], "192.168.1.10", []string{"192.168.1.255", "255.255.255.255"}, false)
+	assertHasUnicastTarget(t, probes[0], "192.168.1.200")
+}
+
+func assertProbe(t *testing.T, probe discoverProbe, bind string, targets []string, optional bool) {
+	t.Helper()
+	if !probe.bindIP.Equal(net.ParseIP(bind)) {
+		t.Fatalf("bindIP=%v, want %s", probe.bindIP, bind)
+	}
+	if probe.optional != optional {
+		t.Fatalf("optional=%v, want %v", probe.optional, optional)
+	}
+	if len(probe.broadcastTargets) != len(targets) {
+		t.Fatalf("broadcastTargets=%v, want %v", probe.broadcastTargets, targets)
+	}
+	for i, want := range targets {
+		if !probe.broadcastTargets[i].Equal(net.ParseIP(want)) {
+			t.Fatalf("broadcastTarget[%d]=%v, want %s", i, probe.broadcastTargets[i], want)
+		}
+	}
+}
+
+func assertHasUnicastTarget(t *testing.T, probe discoverProbe, want string) {
+	t.Helper()
+	for _, target := range probe.unicastTargets {
+		if target.Equal(net.ParseIP(want)) {
+			return
+		}
+	}
+	t.Fatalf("unicastTargets does not contain %s", want)
+}
+
+func assertNoUnicastTarget(t *testing.T, probe discoverProbe, want string) {
+	t.Helper()
+	for _, target := range probe.unicastTargets {
+		if target.Equal(net.ParseIP(want)) {
+			t.Fatalf("unicastTargets contains %s", want)
+		}
+	}
+}
+
 // fakeDevice 起一个回环 UDP 设备:收到查询(0x00/0x04)回应答(0x01)。
 func fakeDevice(t *testing.T, reply protocol.Param) (*net.UDPAddr, func()) {
 	t.Helper()

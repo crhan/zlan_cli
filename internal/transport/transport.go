@@ -1,7 +1,7 @@
 // Package transport 实现 UDP 与串口两种设备管理通道的收发。
 //
 // 设计:device 层只依赖 Conn 接口(ReadParam/WriteParam/Reboot),不感知底层是
-// UDP 单播还是串口直连。广播发现(Discover)与被动监听(Monitor)是 UDP 通道特有,
+// UDP 单播还是串口直连。网络发现(Discover)与被动监听(Monitor)是 UDP 通道特有,
 // 作为包级函数。错误统一翻译成用户可行动的语义错误(见下)。
 package transport
 

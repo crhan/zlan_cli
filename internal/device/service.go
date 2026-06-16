@@ -10,12 +10,12 @@ import (
 	"zlan/internal/transport"
 )
 
-// Discover 广播发现局域网设备。
+// Discover 发现局域网设备。
 func Discover(ctx context.Context, wait time.Duration) ([]transport.Device, error) {
 	return transport.Discover(ctx, wait)
 }
 
-// DiscoverWithOptions 广播发现局域网设备,允许调用方指定源地址/端口和广播目标。
+// DiscoverWithOptions 发现局域网设备,允许调用方指定源地址/端口和广播目标。
 func DiscoverWithOptions(ctx context.Context, opt transport.DiscoverOptions) ([]transport.Device, error) {
 	return transport.DiscoverWithOptions(ctx, opt)
 }
