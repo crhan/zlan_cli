@@ -5,6 +5,7 @@ package modbus
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -28,6 +29,17 @@ const (
 	FuncWriteSingleRegister  byte = 0x06
 	FuncWriteMultipleRegs    byte = 0x10
 )
+
+// ErrTCPDesync marks a Modbus TCP stream that cannot be safely parsed further.
+// Callers that keep long-lived TCP sessions should reconnect before retrying.
+var ErrTCPDesync = errors.New("modbus tcp stream desynchronized")
+
+type tcpDesyncError struct {
+	msg string
+}
+
+func (e tcpDesyncError) Error() string { return e.msg }
+func (e tcpDesyncError) Unwrap() error { return ErrTCPDesync }
 
 // Client talks Modbus over an already selected ZLAN data-channel mode.
 type Client struct {
@@ -165,29 +177,37 @@ func (c *Client) roundTripTCP(unit byte, pdu []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	header := make([]byte, 7)
-	if _, err := io.ReadFull(c.conn, header); err != nil {
-		return nil, err
+	skipped := 0
+	for {
+		header := make([]byte, 7)
+		if _, err := io.ReadFull(c.conn, header); err != nil {
+			return nil, err
+		}
+		gotTID := binary.BigEndian.Uint16(header[0:])
+		proto := binary.BigEndian.Uint16(header[2:])
+		length := int(binary.BigEndian.Uint16(header[4:]))
+		if length < 2 || length > 254 {
+			return nil, tcpDesyncError{msg: fmt.Sprintf("bad modbus tcp length %d", length)}
+		}
+		resp := make([]byte, length-1)
+		if _, err := io.ReadFull(c.conn, resp); err != nil {
+			return nil, err
+		}
+		if proto != 0 {
+			return nil, tcpDesyncError{msg: fmt.Sprintf("unexpected protocol id %d", proto)}
+		}
+		if gotTID != tid {
+			skipped++
+			if skipped > 16 {
+				return nil, tcpDesyncError{msg: fmt.Sprintf("too many unrelated modbus tcp responses while waiting for transaction id %d", tid)}
+			}
+			continue
+		}
+		if header[6] != unit {
+			return nil, fmt.Errorf("unexpected unit id %d, want %d", header[6], unit)
+		}
+		return resp, nil
 	}
-	gotTID := binary.BigEndian.Uint16(header[0:])
-	if gotTID != tid {
-		return nil, fmt.Errorf("unexpected transaction id %d, want %d", gotTID, tid)
-	}
-	if proto := binary.BigEndian.Uint16(header[2:]); proto != 0 {
-		return nil, fmt.Errorf("unexpected protocol id %d", proto)
-	}
-	length := int(binary.BigEndian.Uint16(header[4:]))
-	if length < 2 || length > 254 {
-		return nil, fmt.Errorf("bad modbus tcp length %d", length)
-	}
-	if header[6] != unit {
-		return nil, fmt.Errorf("unexpected unit id %d, want %d", header[6], unit)
-	}
-	resp := make([]byte, length-1)
-	if _, err := io.ReadFull(c.conn, resp); err != nil {
-		return nil, err
-	}
-	return resp, nil
 }
 
 func (c *Client) roundTripRTUOverTCP(unit byte, pdu []byte) ([]byte, error) {

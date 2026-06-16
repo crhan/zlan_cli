@@ -62,6 +62,61 @@ func TestReadRegistersModbusTCP(t *testing.T) {
 	}
 }
 
+func TestReadRegistersModbusTCPSkipsUnrelatedTransaction(t *testing.T) {
+	clientConn, serverConn := net.Pipe()
+	defer clientConn.Close()
+	defer serverConn.Close()
+
+	errc := make(chan error, 1)
+	go func() {
+		req := make([]byte, 12)
+		if _, err := io.ReadFull(serverConn, req); err != nil {
+			errc <- err
+			return
+		}
+		tid := binary.BigEndian.Uint16(req[0:])
+		if tid != 139 {
+			t.Errorf("tid=%d, want 139", tid)
+		}
+
+		foreign := []byte{
+			0x00, 0x01,
+			0x00, 0x00,
+			0x00, 0x06,
+			0x0d,
+			FuncWriteSingleRegister,
+			0x00, 0x02,
+			0x00, 0x02,
+		}
+		resp := []byte{
+			byte(tid >> 8), byte(tid),
+			0x00, 0x00,
+			0x00, 0x05,
+			0x0d,
+			FuncReadHoldingRegisters, 0x02,
+			0x00, 0xf6,
+		}
+		if _, err := serverConn.Write(append(foreign, resp...)); err != nil {
+			errc <- err
+			return
+		}
+		errc <- nil
+	}()
+
+	c := NewClient(clientConn, ModeTCP, time.Second)
+	c.nextTID = 138
+	values, err := c.ReadRegisters(0x0d, FuncReadHoldingRegisters, 0x0000, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(values) != 1 || values[0] != 0x00f6 {
+		t.Fatalf("values=%#v", values)
+	}
+	if err := <-errc; err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestWriteRegistersRTUOverTCP(t *testing.T) {
 	clientConn, serverConn := net.Pipe()
 	defer clientConn.Close()
