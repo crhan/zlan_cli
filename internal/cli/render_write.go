@@ -22,10 +22,11 @@ func renderSetResult(cmd *cobra.Command, g *globalFlags, res *device.SetResult) 
 			changes[f] = map[string]string{"before": b, "after": a}
 		}
 		return writeJSON(cmd.OutOrStdout(), map[string]any{
-			"schema_version": jsonSchemaVersion,
-			"changed":        changes,
-			"network_field":  res.NetworkField,
-			"verified":       res.Verified,
+			"schema_version":  jsonSchemaVersion,
+			"changed":         changes,
+			"network_field":   res.NetworkField,
+			"reboot_expected": res.RebootExpected,
+			"verified":        res.Verified,
 		})
 	}
 	out := cmd.OutOrStdout()
@@ -35,8 +36,12 @@ func renderSetResult(cmd *cobra.Command, g *globalFlags, res *device.SetResult) 
 		fmt.Fprintf(out, "%s: %s -> %s\n", f, b, a)
 	}
 	switch {
+	// NetworkField 是 RebootExpected 的更具体子集(重启 + 可能换网段),必须先判,
+	// 否则 UDP 改网络字段时会被泛化的重启提示吞掉网段警告。
 	case res.NetworkField:
 		cmd.PrintErrln(yellow("已写入,设备保存并重启;改了网络参数,设备可能切换网段。请在对应网段重新 discover/info 确认。"))
+	case res.RebootExpected:
+		cmd.PrintErrln(yellow("已写入,设备应保存参数并重启;稍后用 info 确认。"))
 	case res.Verified:
 		cmd.PrintErrln(green("已生效(读回校验通过)。"))
 	default:

@@ -1,6 +1,37 @@
 package cli
 
-import "testing"
+import (
+	"bytes"
+	"strings"
+	"testing"
+
+	"github.com/spf13/cobra"
+
+	"zlan/internal/device"
+)
+
+// TestRenderSetResultNetworkBeatsReboot 锁死 switch 顺序:UDP 改网络字段时
+// NetworkField 与 RebootExpected 同真,必须显示更具体的网段警告而非泛化重启提示。
+func TestRenderSetResultNetworkBeatsReboot(t *testing.T) {
+	var out, errBuf bytes.Buffer
+	cmd := &cobra.Command{}
+	cmd.SetOut(&out)
+	cmd.SetErr(&errBuf)
+	res := &device.SetResult{
+		Changed:        []string{"local_ip"},
+		NetworkField:   true,
+		RebootExpected: true,
+	}
+	if err := renderSetResult(cmd, &globalFlags{}, res); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(errBuf.String(), "网段") {
+		t.Fatalf("应显示网段警告, got: %q", errBuf.String())
+	}
+	if strings.Contains(errBuf.String(), "稍后用 info 确认") {
+		t.Fatalf("不应被泛化重启提示吞掉, got: %q", errBuf.String())
+	}
+}
 
 func TestProfileAssignmentsModbusTCPRTU(t *testing.T) {
 	got, err := profileAssignments("modbus-tcp-rtu")
