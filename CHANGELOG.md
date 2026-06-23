@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## v0.7.0 - 2026-06-23
+
+- Add Rev.4 UDP `user_param` TLV parsing and WiFi get/set support.
+- Decode WiFi settings, serial byte counters, stop bits, RS485 timing, and expanded flow-control options in `info`.
+- Preserve unknown `user_param` TLVs while displaying decoded TLVs only in their structured sections.
+- Add official ZLMCU protocol, WiFi, SDK demo, and tool references under `docs/reference/zlmcu/`.
+- Add Modbus coil/discrete input reads and single-coil writes to `reg`, while keeping MQTT reads register-only.
+
 ## v0.6.0 - 2026-06-17
 
 - Add `mqtt publish` / `mqtt bridge` to publish Modbus register reads to an MQTT broker.

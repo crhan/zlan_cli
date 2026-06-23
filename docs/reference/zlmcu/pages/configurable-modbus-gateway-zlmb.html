@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="多串口服务器的DCS485多主机通讯" />
+    <meta name="keywords" content=" 多串口服务器  485多主机    DCS" />
+	<meta name="google-site-verification" content="qtMpOVEzw0LC1FTPOSy4pA9wWNSXWN1QKq7HG3amMsk" />
+    <title>可配置Modbus网关嵌入式设备联网解决方案——上海卓岚</title>
+	<link href="css/slick.css"  rel="stylesheet"/>
+    <link href="css/slick-theme.css"  rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/base-v1.3.css">
+    <link rel="stylesheet" href="../css/style.css">
+	<link rel="stylesheet" href="../css/yk.css"/>
+	<link rel="stylesheet" href="../font-awesome-4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="shortcut icon" href="../images/favicon.ico" />
+	<!--二维码弹出js	-->
+	<script type="text/javascript"> 
+	function showImg(){ 
+	document.getElementById("wxImg").style.display='block'; 
+	} 
+	function hideImg(){ 
+	document.getElementById("wxImg").style.display='none'; 
+	} 
+	</script>
+</head>
+<body>
+<div id="wx_pic" style="margin:0 auto;display:none;">
+<img src="../images/test.jpg"/>
+</div>
+<!-- PC头部 -->
+<header>
+	<div class="head-top clearfix">
+		
+		<ul class="left">
+			<li><i class="fa fa-phone fa-lg"></i><span>400-601-5103</span></li>
+			<li><i class="fa fa-envelope-o fa-lg"></i><span>sales@zlmcu.com</span></li>
+			<li><a style="color: #ffffff;font-size: 14px;line-height: 40px;" href="https://zlan.tmall.com/shop/view_shop.htm"><i class="fa fa-shopping-cart fa-lg"></i><span>在线商城</span></a></li>
+		</ul>
+		<ul class="right">
+			<li href="javascript:void(0)" onMouseOut="hideImg()" onmouseover="showImg()"><i class="fa fa-weixin fa-lg"></i></li>
+			<a target="_blank" href="http://wpa.qq.com/msgrd?v=3&uin=3236343438&site=qq&menu=yes"><li ><i class="fa fa-qq fa-lg"> </i></li></a>
+			<!--<li><a href="https://zlan.tmall.com/" target="_blank"><img src="images/taobao2.svg" height="20" alt=""></a></li>-->
+		</ul>
+	</div>
+	
+	<!--鼠标悬停图标显示二维码效果-->
+	<div id="wxImg" class="weixin_nr" >
+	<div class="arrow"></div>
+	<img src="../images/QRcode.jpg" width="100" height="100" />
+	<div style="margin-top: 5px">关注官方微信</div>
+	</div> 
+	
+	
+	<div class="head-bottom clearfix">
+		<a href="../default.htm"><div class="logo">
+			<img src="../images/zlan.svg" class="act-hide" alt="">
+			<img src="../images/zlan2.svg" class="act-show" alt="">
+		</div></a>
+		<ul class="head-nav">
+			<li>
+				<a href="../default.htm">首页</a>
+			</li>
+			<li>
+				<a href="../about_zorlan.htm">关于卓岚</a>
+				<ul class="nav-down">
+					<a href="../about_zorlan.htm"><li>公司简介</li></a>
+					<a href="../about_development.htm"><li>发展历程</li></a>
+					<a href="../about_certificate.htm"><li>公司证书</li></a>
+					<a href="../news.htm"><li>企业动态</li></a>
+				</ul>
+			</li>
+			<li>
+				<a href="../products.htm">产品中心</a>
+				<div class="nav-down">
+					<ul class="cp-down clearfix">
+						<li>
+							<a href="../products_netcom.htm"><p class="img"><img src="../images/nav_01.png" alt=""></p><p class="p1">单串口服务器</p></a>
+							<a href="../products_modbus.htm"><p class="img"><img src="../images/nav_06.png" alt=""></p><p class="p1">Modbus网关</p></a>
+						</li>
+						<li>
+							<a href="../products_netcom.htm#type5"><p class="img"><img src="../images/nav_02.png" alt=""></p><p class="p1">多串口服务器</p></a>
+							<a href="../products_wifi.htm"><p class="img"><img src="../images/nav_07.png" alt=""></p><p class="p1">WiFi产品</p></a>
+						</li>
+						<li>
+							<a href="../products_chip.htm"><p class="img"><img src="../images/nav_03.png" alt=""></p><p class="p1">物联网芯片</p></a>
+							<a href="../products_4G_DTU.htm"><p class="img"><img src="../images/nav_08.png" alt=""></p><p class="p1">4G 产品</p></a>
+						</li>
+						<li>
+							<a href="../products_p2p.htm"><p class="img"><img src="../images/nav_04.png" alt=""></p><p class="p1">P2P联网产品</p></a>
+							<a href="../products_rf.htm"><p class="img"><img src="../images/nav_09.png" alt=""></p><p class="p1">Zigbee/RF产品</p></a>
+						</li>
+						<li>
+							<a href="../products_core_module.htm"><p class="img"><img src="../images/nav_05.png" alt=""></p><p class="p1">以太网核心模块</p></a>
+							<a href="../products_fiber.htm"><p class="img"><img src="../images/nav_10.png" alt=""></p><p class="p1">光纤产品</p></a>
+						</li>
+					</ul>
+				</div>
+			</li>
+			<li>
+				<a href="../solutions.htm">解决方案</a>
+				<div class="nav-down">
+					<ul class="cp-down">
+						<li>
+							<a href="../solutions.htm"><p class="img"><img src="../images/PLC.svg" alt=""></p><p class="p1">PLC联网</p></a>
+							<a href="../solutions.htm"><p class="img"><img src="../images/gongyouyun.svg" alt=""></p><p class="p1">公有云连接方案</p></a>
+						</li>
+						<li>
+							<a href="../solutions.htm"><p class="img"><img src="../images/zhihuidianli.svg" alt=""></p><p class="p1">智慧电力</p></a>
+							<a href="../solutions.htm"><p class="img"><img src="../images/nongye03.svg" alt=""></p><p class="p1">智慧农业</p></a>
+						</li>
+						<li>
+							<a href="../solutions.htm"><p class="img"><img src="../images/wulianwang.svg" alt=""></p><p class="p1">工业物联网</p></a>
+							<a href="../solutions.htm"><p class="img"><img src="../images/shouji.svg" alt=""></p><p class="p1">手机与物联网</p></a>
+						</li>
+						<li>
+							<a href="../solutions.htm"><p class="img"><img src="../images/chengshi.svg" alt=""></p><p class="p1">智慧城市</p></a>
+							<a href="../solutions.htm"><p class="img"><img src="../images/huanbao2.svg" alt=""></p><p class="p1">智慧环保</p></a>
+						</li>
+						<li>
+							<a href="../solutions.htm"><p class="img"><img src="../images/nengyuan03.svg" alt=""></p><p class="p1">智慧能源</p></a>
+							<a href="../solutions.htm"><p class="img"><img src="../images/huandong.svg" alt=""></p><p class="p1">环动监控</p></a>
+						</li>
+					</ul>
+				</div>
+			</li>
+			<li>
+				<a href="../document.htm">技术支持</a>
+				<ul class="nav-down">
+					<a href="../download.htm"><li>资料下载</li></a>
+					<a href="../document.htm"><li>文档中心</li></a>
+					<a href="../video.htm"><li>视频中心</li></a>
+					<a href="../type_search.htm"><li>型号搜索</li></a>
+				</ul>
+			</li>
+			<li><a href="../contatct_us.htm">联系我们</a></li>
+			<li><a href="../type_search.htm"><i class="fa fa-search"></i> 搜索</a></li>
+		</ul>
+		<a href="../en"><p class="language">EN</p></a>
+	</div>
+</header>
+<!-- pad phone版头部 -->
+<header class="header2  clearfix">
+	<div class="logo">
+		<a href="../default.htm">
+			<img src="../images/zlan2.svg"></a>
+	</div>
+	<div class="phlanguage">
+		<a href="../en">EN.</a>
+	</div>
+	<div class="menuph clearfix" id="menuph">
+		<div class="point" id="mbtn">
+			<span class="navbtn"></span>
+		</div>
+	</div>
+</header>
+	<!--手机版下拉-->
+<div class="d-menu-ul">
+	<div class="d-xialaph">
+		<ul class="d-ul1">
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						<a href="../default.htm">首页</a>
+					</h4>
+				</div>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						关于卓岚
+						<img class="img_s" src="../images/SJ_xiala_jia.png">
+						<img class="img_d" src="../images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<!-- 二级 -->
+				<ul class="d-ul2">
+					<div class="containere">
+						<li><a href="../about_zorlan.htm"><h5>公司简介</h5></a></li>
+						<li><a href="../about_development.htm"><h5>发展历程</h5></a></li>
+						<li><a href="../about_certificate.htm"><h5>公司证书</h5></a></li>
+						<li><a href="../news.htm"><h5>企业动态</h5></a></li>
+					</div>
+				</ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						<!--产品中心-->
+						产品中心
+						<img class="img_s" src="../images/SJ_xiala_jia.png">
+						<img class="img_d" src="../images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<!-- 二级 -->
+				<ul class="d-ul2">
+					<li>
+						<div class="containere">
+							<a href="../products_netcom.htm"><h5>单串口服务器</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../serialserver.htm"><h5>多串口服务器</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_chip.htm"><h5>物联网芯片</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_p2p.htm"><h5>P2P联网产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_core_module.htm"><h5>串口以太网核心模块</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_serial_server.htm"><h5>以太网串口模块</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_wifi.htm"><h5>WiFi产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_4G_DTU.htm"><h5>4G 产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_rf.htm"><h5>Zigbee/RF产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_fiber.htm"><h5>光纤产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_modbus.htm"><h5>Modbus网关</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_remote_io.htm"><h5>远程IO控制器</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_converter.htm"><h5>接口转换器</h5></a>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					
+					<h4>
+						解决方案
+						 <img class="img_s" src="../images/SJ_xiala_jia.png">
+                         <img class="img_d" src="../images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<ul class="d-ul2">
+                     <div class="containere">
+                         <li><a href="../solutions.htm"><h5>公有云连接方案</h5></a></li>
+                         <li><a href="../solutions.htm"><h5>智慧电力</h5></a></li>
+                         <li><a href="../solutions.htm"><h5>工业物联网</h5></a></li>
+                         <li><a href="../solutions.htm"><h5>智慧城市</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>智慧能源</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>PLC联网</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>智慧农业</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>手机与物联网</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>智慧环保</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>环动监控</h5></a></li>
+                     </div>
+                </ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						技术支持
+						<img class="img_s" src="../images/SJ_xiala_jia.png">
+						<img class="img_d" src="../images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<!-- 二级 -->
+				<ul class="d-ul2">
+					<div class="containere">
+						<li><a href="../download.htm"><h5>资料下载</h5></a></li>
+						<li><a href="../document.htm"><h5>文档中心</h5></a></li>
+					</div>
+				</ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<a href="../contatct_us.htm">
+						<h4>
+						联系我们
+						</h4>
+					</a>
+				</div>
+			</li>
+		</ul>
+	</div>
+</div>
+<div class="phonemeng"></div>
+<!-- banner -->
+<section class="ny-banner">
+    <img src="../images/B31_01.jpg" class="phone-hide" alt="">
+    <img src="../images/banner5.jpg" class="phone-show" alt="">
+</section>
+<!-- 内容 -->
+<section class="b1-container clearfix">
+<!--移动端导航栏-->
+    <div class="canpon">
+        <div class="to clearfix">
+            <p>产品中心</p>
+            <div class="xong" id="cpmenuph">
+                <div class="hang">
+                  <img src="../images/jian3.png" class="yin" alt="">
+                  <img src="../images/jian2.png" class="show" alt="">
+                </div>
+            </div>
+        </div>
+        <ul class="bottom">
+            <li>
+				<!--一级菜单-->
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<span>单串口服务器</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <a href="../products_netcom.htm#type1"><li>全隔离型串口服务器</li></a>
+                    <a href="../products_netcom.htm#type2"><li>隔离型单串口服务器</li></a>
+                    <a href="../products_netcom.htm#type3"><li>普通单串口服务器</li></a>
+				</ul>
+            </li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <span>多串口服务器</span>
+                </div>
+                <!--二级菜单-->
+                <ul class="danye">
+					<a href="../serialserver.htm#type1"><li>二串口服务器</li></a>
+					<a href="../serialserver.htm#type2"><li>4串口服务器</li></a>
+					<a href="../serialserver.htm#type3"><li>八串口服务器</li></a>
+					<a href="../serialserver.htm#type3"><li>十六串口服务器</li></a>
+				</ul>
+            </li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<span>物联网芯片</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_chip.htm#type1"><li>串口转以太网单芯片</li></a>
+					<a href="../products_chip.htm#type2"><li>Modbus网关单芯片方案</li></a>
+					<a href="../products_chip.htm#type3"><li>P2P联网单芯片方案</li></a>
+				</ul>
+            </li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<span>P2P联网产品</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_p2p.htm#type1"><li>P2P转串口</li></a>
+					<a href="../products_p2p.htm#type2"><li>远程网口设备控制</li></a>
+					<a href="../products_p2p.htm#type3"><li>P2P单芯片P2P模块</li></a>
+					<a href="../products_p2p.htm#type4"><li>其它P2P产品</li></a>
+				</ul>
+			</li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <span>串口以太网核心模块</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_core_module.htm#type1"><li>低功耗10M模块</li></a>
+					<a href="../products_core_module.htm#type2"><li>高稳定性模块</li></a>
+					<a href="../products_core_module.htm#type3"><li>高性能模块</li></a>
+				</ul>
+			</li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <span>以太网串口模块</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_serial_server.htm#type1"><li>插针型RJ45模块</li></a>
+					<a href="../products_serial_server.htm#type2"><li>排线型RJ45模块</li></a>
+					<a href="../products_serial_server.htm#type3"><li>RS232/485联网模块</li></a>
+					<a href="../products_serial_server.htm#type4"><li>二次开发模块</li></a>
+				</ul>
+            </li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <span>WiFi产品</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_wifi.htm#type1"><li>WiFi串口服务器</li></a>
+					<a href="../products_wifi.htm#type2"><li>Wifi核心模块</li></a>
+					<a href="../products_wifi.htm#type3"><li>工业无线AP</li></a>
+				</ul>
+            </li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <span>4G 产品</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_4G_DTU.htm#type1"><li>RS232/485转GPRS</li></a>
+					<a href="../products_4G_DTU.htm#type2"><li>RS232/485转3G</li></a>
+					<a href="../products_4G_DTU.htm#type3"><li>RS232/485转3G/4G</li></a>
+				</ul>
+            </li>
+			<li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <span>LoRa产品</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_lora.htm#type1"><li>LoRa转RS232/485/422</li></a>
+					<a href="../products_lora.htm#type2"><li>LoRa转TCP/IP</li></a>
+				</ul>
+            </li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <span>Zigbee/RF产品</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_rf.htm#type1"><li>Zigbee转RS232/485/422</li></a>
+					<a href="../products_rf.htm#type2"><li>Zigbee转TCP/IP</li></a>
+				</ul>
+            </li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <span>光纤产品</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_fiber.htm#type1"><li>光纤转RS232/485/422</li></a>
+					<a href="../products_fiber.htm#type2"><li>光纤转以太网</li></a>
+				</ul>
+            </li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <span>Modbus网关</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_modbus.htm#type1"><li>普通多主机型Modbus网关</li></a>
+					<a href="../products_modbus.htm#type2"><li>储存型Modbus网关</li></a>
+					<a href="../products_modbus.htm#type3"><li>多串口Modbus网关</li></a>
+				</ul>
+			</li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <span>远程IO控制器</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_remote_io.htm#type1"><li>4路IO控制模块</li></a>
+					<a href="../products_remote_io.htm#type2"><li>8路IO控制模块</li></a>
+				</ul>
+			</li>
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <span>接口转换器</span>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+					<a href="../products_converter.htm#type1"><li>485集线器</li></a>
+					<a href="../products_converter.htm#type2"><li>RS232转RS485</li></a>
+				</ul>
+            </li>
+        </ul>
+    </div>
+<!--PC左侧导航-->
+<div class="left">
+        <div class="top">
+            <p class="img"><img src="../images/chip.svg" alt=""></p>
+            <h3>产品中心</h3>
+        </div>
+        <ul class="bottom">
+			<!--串口服务器-->
+        	<li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../serialserver.htm"><span>串口服务器</span></a>
+                </div>
+                <!--二级菜单-->
+                <ul class="danye">
+					<!--单串口-->
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+					<a href="../serialserver.htm#type1"><span2>全隔离型串口服务器</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN5143I.htm"><li>ZLAN5143I</li></a>
+                    <a href="../products_ZLAN5142I.htm"><li>ZLAN5142I</li></a>
+                	</ul>
+					
+                    
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../serialserver.htm#type2"><span2>隔离型单串口服务器</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN5143BI.htm"><li>ZLAN5143BI</li></a>
+                    <a href="../products_ZLAN5143-232.htm"><li>ZLAN5143-232</li></a>
+                	</ul>
+					
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<a href="../serialserver.htm#type3"><span2>普通单串口服务器</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN5103.htm"><li>ZLAN5103</li></a>
+                    <a href="../products_ZLAN5102.htm"><li>ZLAN5102</li></a>
+                    <a href="../products_ZLAN5102-3.htm"><li>ZLAN5102-3</li></a>
+                    <a href="../products_ZLAN5163.htm"><li>ZLAN5163</li></a>
+                	</ul>
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../serialserver.htm#type4"><span2>导轨型串口服务器</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN5143D.htm"><li>ZLAN5143D</li></a>
+                    </ul>
+					
+					<!--多串口-->
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../serialserver.htm#type5"><span2>二串口服务器</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                     <a href="../products_ZLAN5200.htm"><li>ZLAN5200</li></a>
+					<a href="../products_ZLAN5207M.htm"><li>ZLAN5207M</li></a>
+                    </ul>
+					
+                    
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../serialserver.htm#type6"><span2>四串口服务器</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN5443A.htm"><li>ZLAN5443A</li></a>
+                    <a href="../products_ZLAN5443-232.htm"><li>ZLAN5443-232</li></a>
+                    <a href="../products_ZLAN5443D.htm"><li>ZLAN5443D</li></a>
+					<a href="../products_ZLAN5407M.htm"><li>ZLAN5407M</li></a>
+                	</ul>
+					
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../serialserver.htm#type7"><span2>八串口服务器</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN5840I.htm"><li>ZLAN5840I</li></a>
+                    <a href="../products_ZLAN5843A.htm"><li>ZLAN5843A</li></a>
+                    <a href="../products_ZLAN5G00A-8.htm"><li>ZLAN5G00A-8</li></a>
+					<a href="../products_ZLAN5807M.htm" title="2023年新串口服务器 ZLAN5807M" target="_blank"><li>ZLAN5807M</li></a>
+<a href="../products_ZLAN5807A.htm" title="2023年新串口服务器 ZLAN5807A" target="_blank"><li>ZLAN5807A</li></a>
+                	</ul>
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../serialserver.htm#type8"><span2>十六串口服务器</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN5G00A.htm"><li>ZLAN5G00A</li></a>
+                    <a href="../products_ZLAN5G40A.htm"><li>ZLAN5G40A</li></a>
+                    </ul>
+				</ul>
+            </li>
+			<!--物联网芯片-->
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<a href="../products_chip.htm"><span>物联网芯片</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_chip.htm#type1"><span2>串口转以太网单芯片</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN1003.htm"><li>ZLAN1003</li></a>
+                    </ul>
+					
+                    
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_chip.htm#type1"><span2>Modbus网关单芯片方案</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN1043.htm"><li>ZLAN1043</li></a>
+                    </ul>
+					
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_chip.htm#type1"><span2>P2P联网单芯片方案</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN1043N.htm"><li>ZLAN1043N</li></a>
+                    </ul>
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_chip.htm#type2"><span2>串口服务器单芯片</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_YOXO1007.htm"><li>YOXO1007</li></a>
+                    </ul>
+				</ul>
+            </li>
+			<!--物联网方案-->
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../products_iot_solution.htm"><span>物联网方案</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+					<a href="../cloud.html"><span2>卓岚云平台</span2></a>
+                	</div>
+					</li>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<a href="../products_p2p.htm"><span2>P2P联网产品</span2></a>
+                	</div>
+					</li>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<a href="../document/app_plc_l02.html"><span2>N2N联网方案</span2></a>
+                	</div>
+					</li>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<a href="../document/m2m.html"><span2>M2M联网产品</span2></a>
+                	</div>
+					</li>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<a href="../document/Usage_of_MQTT_Gateway.html"><span2>MQTT网关</span2></a>
+                	</div>
+					</li>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<a href="../document/jsondata.html"><span2>JSON转Modbus</span2></a>
+                	</div>
+					</li>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<a href="../news/onenet.html"><span2>公有云对接方案</span2></a>
+                	</div>
+					</li>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<a href="../news/wechat_applet.html"><span2>微信小程序</span2></a>
+                	</div>
+					</li>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<a href="../document/yunzutai.html"><span2>物联网云组态</span2></a>
+                	</div>
+					</li>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<a href="../document/cloud_dev.html"><span2>云设备管理</span2></a>
+                	</div>
+					</li>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+					<span2>其它方案</span2>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../document/embedded_web_controller.html"><li>基于Web的控制模块</li></a>
+                    <a href="../document/100_tcp.html"><li>超100个TCP连接的应用</li></a>
+                    <a href="../document/zlan_NTP.html"><li>NTP时间模块应用</li></a>
+                    <a href="../document/tech_multi_485_host.html"><li>多主机方案</li></a>
+                	</ul>
+				</ul>
+			</li>
+			<!--串口转以太网模块-->
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../products_core_module.htm"><span>串口转以太网模块</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_core_module.htm#type1"><span2>低功耗10M模块</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLSN2000.htm"><li>ZLSN2000</li></a>
+                    <a href="../products_ZLSN2001.htm"><li>ZLSN2001</li></a>
+                	</ul>
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_core_module.htm#type2"><span2>高稳定性模块</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLSN2002.htm"><li>ZLSN2002</li></a>
+                    <a href="../products_ZLSN2002I.htm"><li>ZLSN2002I</li></a>
+                	</ul>
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_core_module.htm#type3"><span2>高性能模块</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLSN2003S.htm"><li>ZLSN2003S</li></a>
+                    <a href="../products_ZLSN2003.htm"><li>ZLSN2003</li></a>
+                    <a href="../products_ZLSN2003B.htm"><li>ZLSN2003B</li></a>
+                    <a href="../products_ZLSN2003T.htm"><li>ZLSN2003T</li></a>
+                	</ul>
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_core_module.htm#type4"><span2>插针型TTL电平带RJ45模块</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLSN3003S.htm"><li>ZLSN3003S</li></a>
+                    <a href="../products_ZLSN3007S.htm"><li>ZLSN3007S</li></a>
+                    </ul>
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_core_module.htm#type5"><span2>排线型TTL电平带RJ45模块</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLSN3000.htm"><li>ZLSN3000</li></a>
+                    <a href="../products_ZLSN3002.htm"><li>ZLSN3002</li></a>
+                	</ul>
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_core_module.htm#type6"><span2>RS232/485联网模块</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLSN4000.htm"><li>ZLSN4000</li></a>
+                    <a href="../products_ZLSN5102.htm"><li>ZLSN5102</li></a>
+                    </ul>
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_core_module.htm#type7"><span2>二次开发模块</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLSN5102-M.htm"><li>ZLSN5102-M</li></a>
+                    </ul>
+				
+					
+				</ul>
+			</li>
+            <!--WiFi产品-->
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../products_wifi.htm"><span>WiFi产品</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+
+						<a href="../products_wifi.htm#type1"><span2>WiFi串口服务器</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN7104.htm"><li>ZLAN7104</li></a>
+                    <a href="../products_ZLAN7142.htm"><li>ZLAN7142</li></a>
+                    <a href="../products_ZLAN7146.htm"><li>ZLAN7146</li></a>
+					<a href="../products_ZLAN7110M.htm"><li>ZLAN7110M</li></a>	
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_wifi.htm#type2"><span2>Wifi核心模块</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLSN7004.htm"><li>ZLSN7004</li></a>
+                    <a href="../products_ZLSN7044.htm"><li>ZLSN7044</li></a>
+                    <a href="../products_ZLSN7046.htm"><li>ZLSN7046</li></a>
+                    <a href="../products_ZLSN7046T.htm"><li>ZLSN7046T</li></a>
+                	</ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_wifi.htm#type3"><span2>工业无线AP</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN7100_AP.htm"><li>ZLAN7100-AP</li></a>
+                    </ul>
+				</ul>
+            </li>
+			<!--4G/5G产品-->
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../products_4G_DTU.htm"><span>4G/5G产品</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_4G_DTU.htm#type1"><span2>RS232/485转GPRS</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN8100.htm"><li>ZLAN8100</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_4G_DTU.htm#type2"><span2>RS232/485转4G</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+	    			<a href="../products_ZLAN8305.htm"><li>ZLAN8305</li></a>
+	    			<a href="../products_ZLAN8305L.htm"><li>ZLAN8305L</li></a>
+                    <a href="../products_ZLAN8303.htm"><li>ZLAN8303-7</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_4G_DTU.htm#type3"><span2>RS232/485转CAT1 4G</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+	    			<a href="../products_ZLAN8308.htm"><li>ZLAN8308</li></a>
+					<a href="../products_ZLAN8308M.htm"><li>ZLAN8308M</li></a>
+	    			<a href="../products_ZLSN8008.htm"><li>ZLSN8008</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_4G_DTU.htm#type4"><span2>4G转4网口2串口</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN8304N2-5.htm"><li>ZLAN8304N2-5</li></a>
+                    </ul>
+					
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+						<a href="../products_4G_DTU.htm#type5"><span2>5G DTU</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN8507.htm"><li>ZLAN8507</li></a>
+                    </ul>
+				</ul>
+            </li>
+			<!--NB-IoT-->
+			<li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../products_ZLAN8200.htm"><span>NB-IoT</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_ZLAN8200.htm"><span2>NB-IoT DTU</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN8200.htm"><li>ZLAN8200</li></a>
+                    </ul>
+					
+				</ul>
+            </li>
+			<!--LoRa产品-->
+			<li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../products_lora.htm"><span>LoRa产品</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_lora.htm#type1"><span2>LoRa转RS232/485/422</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN9700.htm"><li>ZLAN9700</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_lora.htm#type2"><span2>LoRa转TCP/IP</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN9743.htm"><li>ZLAN9743</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_lora.htm#type3"><span2>LoRa转串口模块</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLSN9700C.htm"><li>ZLSN9700C</li></a>
+                    </ul>
+				</ul>
+            </li>
+			<!--Zigbee产品-->
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../products_rf.htm"><span>Zigbee产品</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_rf.htm#type1"><span2>Zigbee转RS232/485/422</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN9500.htm"><li>ZLAN9500</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_rf.htm#type2"><span2>Zigbee转TCP/IP</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN9503.htm"><li>ZLAN9503</li></a>
+                    </ul>
+				</ul>
+            </li>
+			<!--光纤产品-->
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../products_fiber.htm"><span>光纤产品</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_fiber.htm#type1"><span2>光纤转RS232/485/422</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN9153.htm"><li>ZLAN9153</li></a>
+                    <a href="../products_ZLAN9163.htm"><li>ZLAN9163</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_fiber.htm#type2"><span2>光纤转以太网</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN9100.htm"><li>ZLAN9100</li></a>
+                    </ul>
+				</ul>
+            </li>
+			<!--Modbus网关-->
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../products_modbus.htm"><span>Modbus网关</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_modbus.htm#type1"><span2>普通多主机型Modbus网关</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN5142.htm"><li>ZLAN5142</li></a>
+                    <a href="../products_ZLAN7142.htm"><li>ZLAN7142</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_modbus.htm#type2"><span2>储存型Modbus网关</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN5143.htm"><li>ZLAN5143</li></a>
+                    <a href="../products_ZLAN7104.htm"><li>ZLAN7144</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_modbus.htm#type3"><span2>多串口Modbus网关</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN5240.htm"><li>ZLAN5240</li></a>
+                    <a href="../products_ZLAN5443A.htm"><li>ZLAN5443A</li></a>
+                    <a href="../products_ZLAN5843A.htm"><li>ZLAN5843A</li></a>
+                    <a href="../products_ZLAN5G40A.htm"><li>ZLAN5G40A</li></a>
+                    </ul>
+				</ul>
+			</li>
+			<!--远程IO控制器-->
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../products_remote_io.htm"><span>远程IO控制器</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_remote_io.htm#type1"><span2>4路IO控制模块</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN6002A.htm"><li>ZLAN6002A</li></a>
+                    <a href="../products_ZLAN6042.htm"><li>ZLAN6042</li></a>
+					<a href="../products_ZLAN6002.htm"><li>ZLAN6002</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_remote_io.htm#type2"><span2>8路IO控制模块</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN6802.htm"><li>ZLAN6802</li></a>
+                    <a href="../products_ZLAN6842.htm"><li>ZLAN6842</li></a>
+                    <a href="../products_ZLAN6844.htm"><li>ZLAN6844</li></a>
+                    <a href="../products_ZLAN6844N.htm"><li>ZLAN6844N</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_remote_io.htm#type3"><span2>4G IO控制器</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN6808.htm"><li>ZLAN6808</li></a>
+                    </ul>
+				</ul>
+			</li>
+			<!--接口转换器-->
+            <li>
+                <div class="tio">
+                    <img src="../images/B1990_06.png" class="yin" alt="">
+                    <img src="../images/B1991_03.jpg" class="click-show" alt="">
+                    <a href="../products_converter.htm"><span>接口转换器</span></a>
+                </div>
+				<!--二级菜单-->
+                <ul class="danye">
+                    <li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_converter.htm#type1"><span2>485集线器</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN9440.htm"><li>ZLAN9440</li></a>
+                    <a href="../products_ZLAN9480A.htm"><li>ZLAN9480A</li></a>
+                    </ul>
+					<li>
+					<div class="tio">
+                    <img src="../images/B1990_06.png" class="yin">
+                    <img src="../images/B1991_03.jpg" class="click-show">
+						<a href="../products_converter.htm#type2"><span2>RS232转RS485</span2></a>
+                	</div>
+					</li>
+					<ul class="danye">
+                    <a href="../products_ZLAN9223E.htm"><li>ZLAN9223E</li></a>
+                    <a href="../products_ZLAN9440.htm"><li>ZLAN9410 </li></a>
+                    </ul>
+				</ul>
+            </li>
+        </ul>
+    </div>
+<!--右侧内容-->
+<div class="right">
+	<div class="product_d">
+	  <h3>可配置Modbus网关 嵌入式设备联网解决方案</h3>
+	  <h5> <span>发布时间：2023-04-23</span> <span>作者：上海卓岚</span> <span>浏览量：4365</span> </h5>
+    
+	<div class="title2">1.概述</div>
+	<p>可配置Modbus网关可以预先配置Modbus RTU端的设备的地址、功能码和寄存器列表，并存储到网关内部。网关会自动采集这些配置的RTU设备的数据，然后映射到连续的Modbus TCP寄存器地址，从而允许Modbus TCP端一次性读取所有的设备的不同寄存器的数据。它的这种地址映射功能是对普通的Modbus RTU转Modbus TCP的Modbus网关的补充。</p>
+	<p>卓岚ZLAN5143、ZLAN7144、ZLAN7146、ZLAN5207M、ZLAN5407M等都支持可配置Modbus网关功能。其中ZLAN5143需要固件版本1.579及以上版本，配合ZLVircom5.15及以上版本来使用。7144需要固件版本1.491及以上版本。卓岚可配置Modbus网关简称为“ZLMB网关”。</p>
+	<div class="title3"><strong>可配置Modbus网关具有如下的优点：</strong></div>
+	<p>1.指令合并：可以将分散的不同的站地址、寄存器映射到同一片寄存器。这样Modbus TCP端可以用一条指令采集所有数据，而不是分为几条指令分别去采集，实现了Modbus TCP端的传输效率。</p>
+	<p>2.预先采集：虽然之前的“存储型Modbus”可以自动采集一些数据，但是自动采集是在Modbus TCP端查询第一条指令开始的，所以第一条指令本身的返回数据还是需要等待串口的信息的返回。而可配置Modbus网关的自动采集是从网关上电就开始，第一条指令仍然可以快速应答。</p>
+	<p>多主机支持：可以支持多台Modbus TCP客户端连接上读取网关数据。</p>
+	<p>4.支持写指令：目前对于重新映射过的寄存器地址，Modbus TCP端不仅可以使用重新映射的地址读到数据，而且可以向这个重新映射的地址使用05和06指令写入数据。 </p>
+	<p> 5.支持任意长度读取：ZLVircom配置工具会显示RTU端的寄存器地址和TCP端的寄存器地址的映射关系。Modbus TCP端不仅可以整片读取寄存器和单个读取寄存器，而且可以任意长度来读取合法地址和长度的寄存器内容。</p>
+	<p>6.支持离线提示：当某个RTU设备从RS485总线上离线后，从Modbus TCP这端查询到的数据将全部变为0，提示设备的离线。</p>
+	<p>7.支持丢失重发：由于RS485总线容易存在干扰，假如第一次查询指令没有应答，则网关会再发送一条指令，并等待超时时间，如果确认第二次也没有应答才认为设备离线。通过ZLVircom可以设置第一次发送的时间和第二次超时应答时间。 </p>
+	<p>8.支持大量设备和寄存器：目前支持100条RTU查询指令和500个寄存器数量，同时被访问。 </p>
+	<div class="title3"><strong>2.简单例子</strong></div>
+	<p>2.1.RTU采集要求<br>
+	  </p>
+	<p>这里以ZLAN5143为例来介绍，首先确认固件版本为1.579及以上版本， ZLVircom为5.15及以上版本。</p>
+	<p>假设ZLAN5143的RS485下面接了2个Modbus RTU设备，需要采集的信息如下： </p>
+	  <center>
+	<table  border="1">
+	  <tbody>
+	    <tr>
+	      <td> 记录编号</td>
+	      <td>从站地址 </td>
+	      <td>功能码 </td>
+	      <td>寄存器地址 </td>
+			<td>长度</td>
+	    </tr>
+	    <tr>
+	      <td>1 </td>
+	      <td> 1</td>
+	      <td> 3</td>
+	      <td> 2</td>
+	      <td>4 </td>
+	    </tr>
+	    <tr>
+	      <td>2 </td>
+	      <td>2 </td>
+	      <td>1 </td>
+	      <td>5 </td>
+	      <td>9 </td>
+	    </tr>
+	    <tr>
+	      <td>3 </td>
+	      <td> 3</td>
+	      <td> 3</td>
+	      <td> 2</td>
+	      <td>4 </td>
+	    </tr>
+	   
+	    </tbody>
+	  </table></center>
+	  <p>现在需要ZLVircom进行配置，实现可以配置Modbus网关。</p>
+	  <p>2.2.ZLVircom配置 </p>
+	  <p>运行ZLVircom，进入设备管理点击搜索设备选择一个需要配置的设备点击编辑设备点击下面“固件和配置”按钮，弹出如下对话框： </p>
+	  <center></center>
+	  <center><img src="pic/zlmb_01.jpg" alt=""/><br/><p>图 1进入ZLMB配置方法</p></center> <br />
+	<p>这里选择“网页目录下载”，并且点击“…”，选择一个之前新建的空目录，用于存放配置信息。然后点击“ZLMB网关”按钮，弹出如下对话框：</p>
+	<center><img src="pic/zlmb_02.jpg" alt=""/><br/><p>图 2可配置Modbus网关设置列表</p></center> <br />
+	<p>点击“添加”按钮可以逐条添加表1的RTU指令。这里需要注意的是网关会将Modbus TCP这端的寄存器地址从0开始自动按顺序增加。所以为了让同一个功能码的指令可以一次性分到同一个区域，应该将相同功能码的指令连续添加。也就是将表1的记录编号1和记录编号3放在一次，而编号2放在最后。添加的3个图如下：</p>
+		<center><img src="pic/zlmb_03.jpg" alt=""/><br/><p>图 3表1的编号1 RTU指令的配置</p></center> <br />
+	  <p>对于编号1的RTU指令的配置对话框解释如下：</p>
+	  <p>1.记录编号：这个是系统根据添加的顺序自动增加编号，不可修改。不一定和表1一致。</p>
+	  <p>2.从站地址：该RTU指令的RTU端从站地址。</p>
+	  <p>3.Modbus功能码：该RTU指令的功能码。</p>
+	  <p>4.寄存器起始地址：RTU端指令的寄存器开始地址。</p>
+	  <p>5.寄存器长度：RTU端指令的寄存器查询长度。</p>
+	  <p>6.串口轮询间隔：这个间隔是网关正常发送查询指令后等待应答返回的时间。也是轮询的速度。所有RTU指令的这个参数是一样的，如果不一样取最大者。</p>
+	  <p>7.超时应答时间：这个时间是在正常发送查询指令接收不到应答时，立刻发送第二条查询时的等待应答返回时间。所有RTU指令的这个参数是一样的，如果不一样取最大者。</p>
+	  <p>8.支持06或者05写指令：勾选这个选项将可以支持Modbus TCP端对RTU设备的数据的改写。若不需要改写则不要勾选，因为勾选，会额外增加内存和计算量开销。</p>
+	  <p>9.Modbus TCP寄存器地址：这个地址是系统自动按照顺序计算的，Modbus TCP端只要按照这个起始地址读取即可得到这条RTU指令获得的数据。这个参数是地址映射的关键信息。</p>
+		<p>确定后，再次点击“添加”，添加表1编号3的指令：</p>
+		<center><img src="pic/zlmb_04.jpg" alt=""/><br/><p>图 4表1的编号3 RTU指令的配置 </p></center> <br />
+		<p>这里看到Modbus TCP寄存器地址自动增加到4。说明两条指令合并的寄存器从0～7，整个寄存器范围都可以一次性读取。</p>
+		<p>添加表1编号2的指令：</p>
+		<center><img src="pic/zlmb_05.jpg" alt=""/><br/><p>图 5表1的编号2 RTU指令的配置 </p></center> <br />
+		<p>这里系统自动分配的Modbus TCP地址为01指令的128地址（十进制）。最后列出的表格是：</p>
+		<center><img src="pic/zlmb_06.jpg" alt=""/><br/><p>图 6 RTU和Modbus TCP寄存器映射关系表   </p></center> <br />
+		<p>这个表格列出了RTU和Modbus TCP寄存器映射关系。也清楚的展示了，如果用户需要获得RTU端的某个设备的数据需要用什么功能码的什么寄存器地址去读取数据。</p>
+		<p>例如需要读取从站地址2功能码1、寄存器地址5、长度9的数据可以使用Modbus TCP指令的任意从站地址、功能码1、寄存器地址128、长度9来读取。
+最后点击“保存并返回”来保存设计，如果点击“不保存返回”则放弃设计。同时可以通过选择某一行点击“编辑”进行编辑，点击“删除”删除某个RTU指令。</p>
+	  <p>点击“保存并返回”后回到“卓岚网页/程序下载工具”界面。在这个界面点击“下载按钮”。下载完毕后弹出“传输完毕…”按钮，然后点击确定，设备将会自动重启，并加载这个配置。</p>
+		<p>2.3.数据测试</p>
+		<p>现在使用串口模拟这个RTU设备，并进行测试，RTU端模拟参数如下图。</p>
+		<center><img src="pic/zlmb_07.jpg" alt=""/><br/><p>图 7 模拟表1的3个RTU设备  </p></center> <br />
+		<p>然后将ZLAN5143连接到这个计算机串口。假如设备的IP为192.168.0.200，端口4196，Modbus TCP软件连接上这个IP和端口后读取如下的数据。根据映射关系表，应该读取0～7这8个寄存器，功能码为03；应该读取128到136这9个bit性寄存器，功能码为01。</p>
+		<center><img src="pic/zlmb_08.jpg" alt=""/><br/><p>图 8 Modbus读取网关数据   </p></center> <br />
+		<p>如图所示，可配置Modbus网关实现了站地址1、站地址3这两个RTU Modbus的数据合并，将其合并到寄存器0～7整片区域，实现指令合并功能。
+使用SockeDlgTest连接上192.168.0.200的4196端口发送12 34 00 00 00 06 01 03 00 00 00 00指令，立即返回数据。</p>
+		<center><img src="pic/zlmb_09.jpg" alt=""/><br/><p>图 9 预采集效果  </p></center> <br />
+		<p>如图所示返回时间大约为18ms。这个反应时间比“存储型”Modbus的第一次应答时间要快速很多。
+打开多个Modbus TCP客户端可以同时对网关进行数据采集。说明可以支持多主机功能。
+在Modbus TCP端修改某个寄存器的值，则在RTU端的数据就被修改，同时也会反馈到Modbus TCP端。这说明发送的05/06单线圈修改和单寄存器修改指令写是支持的。</p>
+		<p>修改任意长度的寄存器长度读取，例如修改为从01地址开始的06个长度的寄存器内容，同样可以正常读取到Modbus TCP软件中。说明支持任意长度的数据读取。
+将Modbus RTU软件关闭或者关闭串口。则Modbus TCP软件中的数据全部变为0，可见可以通过数据全部变为0来反映一个仪表的离线还是在线。
+关闭Modbus RTU软件，使用ZLComDebug打开COM口接收数据，可以看到当一条指令没有应答时会重发一次。说明网关具有数据重发功能。</p>
+		<center><img src="pic/zlmb_10.jpg" alt=""/><br/><p>图 10 数据重发功能  </p></center> <br />
+		<p>2.4.设置离线默认值</p>
+		<center><img src="pic/zlmb_11.jpg" alt=""/><br/><p>图 11 设置离线默认值   </p></center> <br />
+		<p>设置离线默认值功能，可以可以让设备离线的时候采集到一个特殊的值，例如65535（也就是有符号的-1）。因为之前的默认值为0，有些设备的0是一个可能出现的值，无法区分是离线还是有效数据。</p>
+		<p>这个离线只要求高字节和低字节一样，即可以设置：v*256+v，其中v≤255且v＞=0。
+	只有第一条记录的设置值是有效的，其它记录仿造第一条记录的参数。这里只看第一条记录的参数还包括：串口轮询间隔、超时应答时间、支持06或者05写指令。</p>
+	<div class="title2">3.其它注意事项</div>
+		<p>1.某些bit型数据无法合并，如下图，01/02指令的第一个指令的数据长度为9，不是16的倍数。所以无法通过从128开始的地址读取19个来一起读取所有数据。而是应该按照软件给出的128地址读9个，144地址读10个，分别读取。</p>
+		<center><img src="pic/zlmb_12.jpg" alt=""/><br/><p>图 12 Bit数据的连续   </p></center> <br />
+	  <p>2.Modbus TCP的站地址无所谓，一般用01即可。</p>
+	  <p>3.如果发现无法支持05/06指令，请确认设计的时候是否已经勾选05/06支持选项。 </p>
+	  <p>4.注意02功能的寄存器是无法被修改的。 </p>
+	  <p>5.注意Modbus网关的“转化协议”部分不要选择“Modbus TCP转RTU”，请选择“无”协议。 </p>
+	  <p>6.现在可以支持多寄存器写入的15/16指令。但是不要跨区域写入。例如原来的地址为2个寄存器是一起排列的，如果试图跨区域一次写入超过2个寄存器将会出错。 </p>
+	 
+	
+		
+	</div>
+	<div class="XGTJ">相关推荐<a href="../products_ZLAN5143.htm">ZLAN5143</a><a href="../products_ZLAN5207M.htm">Zlan5207M</a><a href="../products_ZLAN5407M.htm">Zlan5407M</a><a href="../products_netcom.htm"> 串口服务器</a></div>
+</div>
+</section>
+<style>.XGTJ{color: #888888;
+    line-height: 2;
+    margin: 2em 0;
+    padding-top: 3em;}
+	.XGTJ a{
+		border-radius: 2px;
+    border: 1px #d0d0d0 solid;
+    font-size: 1em;
+    font-family: "PingFangSC-Light";
+    background-color: #edf1f3;
+    display: inline-block;
+	margin-left: 0.5em;
+    padding: 0 0.5em;
+    line-height: 17px;
+	color: inherit;
+    text-decoration: none;
+	}</style>
+<!-- 底部 -->
+<footer class="footer">
+	<div class="footer-main-area" data-background="images/footer-bg.png">
+		<div class="container">
+			<div class="row">
+				<div class="col-xl-4 col-lg-6 col-md-6">
+
+					<div class="widget footer-widget">
+						<img src="images/zlan2.svg" alt="" class="foot-logo">
+
+						<p class="text-light-gray summary mrb-40 mrt-10">上海卓岚信息科技有限公司是一家专业提供工业物联网解决方案，集研发、生产、销售为一体的集团公司。成立于2008年 。公司在采集设备定制、物联网通讯协议设计、物联网方案选型、工业物联网平台开发方面有核心优势，可以提供各类物联网定制项目。</p>
+						<form name="formsearch" method="get" action="../type_search.htm">
+							<input type="search" class="search-input" name="value" size="24" value="请输入搜索内容..." onfocus="if(this.value==&#39;请输入搜索内容...&#39;){this.value=&#39;&#39;;}" onblur="if(this.value==&#39;&#39;){this.value=&#39;请输入搜索内容...&#39;;}" id="inputString" onkeyup="lookup(this.value);" placeholder="搜索...">
+							<button type="submit" value="Search"><i class="fa fa-search"></i>&nbsp;搜索</button>
+						</form>
+					</div>
+				</div>
+				<div class="col-xl-2 col-lg-6 col-md-6">
+					<div class="widget footer-widget haha">
+						<h5 class="widget-title text-white mrb-30">快速链接</h5>
+						<ul class="footer-widget-list">
+							<li><a href="../serialserver.htm">串口服务器</a></li>
+							<li><a href="../IOT_gateway.htm">物联网网关</a></li>
+							<li><a href="../products_chip.htm">物联网芯片</a></li>
+							<li><a href="../products_ZLSN3007S.htm">超级网口</a></li>
+							<li><a href="../485_ethernet.htm">485转以太网</a></li>
+							<li><a href="../products_serial_server.htm">以太网串口模块</a></li>
+							<li><a href="../products_wifi.htm">串口WIFI模块</a></li>
+							<li><a href="../products_ZLAN9163.htm">485光端机</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-xl-2 col-lg-6 col-md-6">
+					<div class="widget footer-widget haha">
+						<h5 class="widget-title text-white mrb-30">&nbsp;</h5>
+						<ul class="footer-widget-list">
+							<li><a href="../4G_DTU.htm">4G DTU</a></li>
+							<li><a href="../products_4G_DTU.htm">4G路由器</a></li>
+							<li><a href="../products_lora.htm">LoRa</a></li>
+							<li><a href="../products_rf.htm">Zigbee</a></li>
+							<li><a href="../products_modbus.htm">Modbus网关</a></li>
+							<li><a href="../products_remote_io.htm">远程IO控制器</a></li>
+							<li><a href="../products_converter.htm">串口转换器</a></li>
+							<li><a href="../products_fiber.htm">光纤收发器</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-xl-4 col-lg-6 col-md-6">
+					<div class="widget footer-widget haha">
+						<h5 class="widget-title text-white mrb-30">联系我们</h5>
+						<address class="mrb-25">
+							<div class="mrb-10"><a href="tel:400-601-5103" class="text-phone">400-601-5103</a></div>
+							<div class="mrb-10"><i class="fa fa-phone mrr-10"></i><a href="tel:189-3009-4219" class="text-phone2">非工作日：189-3009-4219</a></div>
+							<div class="mrb-10"><i class="fa fa-envelope mrr-10"></i>产品咨询：sales@zlmcu.com</div>
+							<div class="mrb-10"><i class="fa fa-comments mrr-10"></i>技术支持：support@zlmcu.com</div>
+							<div><i class="fa fa-location-arrow mrr-10"></i>上海市闵行区园文路28号世宏金源2001室</div>
+						</address>
+						<ul class="social-list">
+							<li class="three"><a class="taobao" href="https://zlan.tmall.com/" target="_blank"><img src="../images/tianmao.png" alt=""></a></li>
+							<li class="four"><a class="jd" href="http://zlaniot.jd.com" target="_blank"><img src="../images/jd.svg" alt=""></a></li>
+							<li class="one"><a href="javascript:" id="contact_weixin" onclick="openWindow(this)"><i class="fa fa-weixin"></i></a></li>
+							<li class="two"><a href="javascript:" id="contact_skype" onclick="openWindow(this)"><i class="fa fa-skype"></i></a></li>
+							
+						</ul>
+					</div>
+				</div>
+				<div id="light_weixin" class="white_content"><img src="../images/QRcode.jpg" alt=""/></div>
+				<div id="light_skype" class="white_content"><img src="../images/QRcode.jpg" alt=""/></div>
+				<div id="fade" class="black_overlay"  onClick="closeWindow()"></div>
+
+			</div>
+		</div>
+	</div>
+	<div class="footer-bottom-area">
+		<div class="container">
+			<div class="row">
+				<div class="col-xl-6">
+					<span class="text-silver">版权所有@上海卓岚信息科技有限公司 | <a href="http://beian.miit.gov.cn/">沪ICP备11004689号-1</a><script src="http://s121.cnzz.com/stat.php?id=1204382&web_id=1204382&show=pic" language="JavaScript" charset="gb2312"></script></span>
+				</div>
+				<div class="col-xl-6">
+					<span class="text-silver"><a href="../about_zorlan.htm">关于我们</a>&nbsp;&nbsp;&nbsp;<a href="../products.htm">产品中心</a>&nbsp;&nbsp;&nbsp;<a href="../solutions.htm">解决方案</a>&nbsp;&nbsp;&nbsp;<a href="../download.htm">资料下载</a>&nbsp;&nbsp;&nbsp;<a href="../document1.htm">文档中心</a></span>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</footer>
+
+	
+<!-- totop -->
+<div class="totop1">
+	<p id="toTop"><img src="../images/aa.png" alt=""></p>
+</div>
+
+
+
+<script src="../js/jquery-1.12.4.min.js"></script>
+<script src="../js/slick.min.js"></script>
+<script src="../js/common.js"></script>
+<script type="text/javascript">
+    $(function () {
+        //PC侧边下拉
+        $('.b1-container .left .bottom > li').click(function () {
+            $(this).toggleClass("act");
+            if($(this).hasClass("act")){
+                $(this).find(".danye").slideDown();
+                $(this).siblings().removeClass("act");
+                $(this).siblings().find(".danye").slideUp();
+            }else{
+                $(this).find(".danye").slideUp();
+            }
+        });
+
+        // phone产品菜单下拉
+        $("#cpmenuph").click(function(){
+            $(this).find(".hang").toggleClass("active");
+            $(this).parent().siblings().slideToggle();
+            $(this).parent().siblings().find(".act .danye").hide();
+            $(this).parent().siblings().find(".act").removeClass();
+            // $(".phonemeng").toggleClass('active');
+            /* $("body,html").animate({
+                 scrollTop:0
+             },500);*/
+        });
+        $('.b1-container .canpon .bottom  > li').click(function () {
+            $(this).toggleClass("act");
+            if($(this).hasClass("act")){
+                $(this).find(".danye").slideDown();
+                $(this).siblings().removeClass("act");
+                $(this).siblings().find(".danye").slideUp();
+            }else{
+                $(this).find(".danye").slideUp();
+            }
+        });
+		
+		
+		
+		
+		
+		
+    })
+</script>
+<script  type="text/javascript">
+function openWindow(obj){
+	switch(obj.id)
+	{
+		case 'contact_weixin':
+		skype_or_weixin = "light_weixin";
+		break;
+
+		case 'contact_skype':
+		skype_or_weixin = "light_skype";
+		break;
+	}
+	document.getElementById(skype_or_weixin).style.display='block';
+	document.getElementById('fade').style.display='block';
+}
+function closeWindow(){
+	document.getElementById('light_weixin').style.display='none';
+	document.getElementById('light_skype').style.display='none';
+	document.getElementById('fade').style.display='none';
+}
+</script>
+
+</body>
+</html>

@@ -45,7 +45,11 @@ func TestFieldSetGolden(t *testing.T) {
 		{"baud", "9600", 37, "04"},
 		{"parity", "none", 48, "00"},
 		{"packing_len", "1300", 50, "05 14"},
+		{"rs485_half_gap", "30", 54, "1e"},
+		{"rs485_timeout", "120", 55, "78"},
 		{"dhcp_en", "dhcp", 56, "01"},
+		{"flow_ctrl", "dsr-dtr", 57, "02"},
+		{"flow_ctrl", "xon-xoff", 57, "03"},
 		{"data_bits", "8", 59, "00"}, // 反序:0=8bit
 		{"data_bits", "5", 59, "03"},
 		{"app_proto", "modbus", 60, "01"},
@@ -54,6 +58,8 @@ func TestFieldSetGolden(t *testing.T) {
 		{"keep_alive", "60", 97, "3c"}, // §9:保活在后
 		{"web_port", "80", 98, "00 50"},
 		{"group_ip", "230.90.76.1", 105, "e6 5a 4c 01"},
+		{"multi_host_wait", "2", 113, "02"},
+		{"stop_bits", "2", 114, "01"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.field+"="+tc.value, func(t *testing.T) {
@@ -73,6 +79,29 @@ func TestFieldSetGolden(t *testing.T) {
 				t.Errorf("往返不一致: set %q get %q", tc.value, back)
 			}
 		})
+	}
+}
+
+func TestStopBitsPreservesOtherBits(t *testing.T) {
+	var p Param
+	p[114] = 0xfe
+	if err := p.SetField("stop_bits", "2"); err != nil {
+		t.Fatal(err)
+	}
+	if p[114] != 0xff {
+		t.Fatalf("set 2 stop bits should preserve other bits: got %02x", p[114])
+	}
+	if got, _ := p.GetField("stop_bits"); got != "2" {
+		t.Fatalf("stop_bits got %q", got)
+	}
+	if err := p.SetField("stop_bits", "1"); err != nil {
+		t.Fatal(err)
+	}
+	if p[114] != 0xfe {
+		t.Fatalf("set 1 stop bit should preserve other bits: got %02x", p[114])
+	}
+	if got, _ := p.GetField("stop_bits"); got != "1" {
+		t.Fatalf("stop_bits got %q", got)
 	}
 }
 
@@ -156,8 +185,17 @@ func TestBitField(t *testing.T) {
 	if p[110] != 0x05 {
 		t.Fatalf("叠加后 got %02x", p[110])
 	}
-	if got, _ := p.GetField("func_en"); got != "0x05" {
+	if err := p.SetField("func_en.p2p", "1"); err != nil {
+		t.Fatal(err)
+	}
+	if p[110] != 0x15 {
+		t.Fatalf("P2P 位后 got %02x", p[110])
+	}
+	if got, _ := p.GetField("func_en"); got != "0x15" {
 		t.Fatalf("容器 got %q", got)
+	}
+	if got, _ := p.GetField("func_en.p2p"); got != "1" {
+		t.Fatalf("P2P 子位 got %q", got)
 	}
 	if got, _ := p.GetField("func_en.need_password"); got != "1" {
 		t.Fatalf("子位 got %q", got)
@@ -165,14 +203,14 @@ func TestBitField(t *testing.T) {
 	if err := p.SetField("func_en.need_password", "0"); err != nil {
 		t.Fatal(err)
 	}
-	if p[110] != 0x01 {
+	if p[110] != 0x11 {
 		t.Fatalf("清位后 got %02x", p[110])
 	}
 }
 
 func TestReadOnlyAndOpaqueRejected(t *testing.T) {
 	var p Param
-	for _, name := range []string{"ver", "devid", "status", "func_sel", "func_sel2", "status.connected", "func_sel.dns"} {
+	for _, name := range []string{"ver", "devid", "status", "func_sel", "func_sel2", "status.connected", "func_sel.dns", "func_sel2.proxy_server"} {
 		if err := p.SetField(name, "1"); err == nil {
 			t.Errorf("只读字段 %s 应拒绝写入", name)
 		}
@@ -190,8 +228,9 @@ func TestSetFieldValidation(t *testing.T) {
 		{"local_ip", "999.1.1.1"},
 		{"work_mode", "bogus"},
 		{"baud", "12345"},
-		{"packing_len", "0"},        // 下界
-		{"packing_len", "2000"},     // 上界
+		{"packing_len", "0"},    // 下界
+		{"packing_len", "2000"}, // 上界
+		{"stop_bits", "3"},
 		{"group_ip", "192.168.1.1"}, // 非组播段
 		{"dest_port", "70000"},
 		{"unknown_field", "x"},

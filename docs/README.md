@@ -9,6 +9,17 @@ maintaining `zlan`.
   - Source: `/home/ruohanc/project/zlan/docs/ZLAN7110M-WIFI串口服务器说明书.pdf`
   - Useful for ZLAN7110M WiFi setup, ZLVirCOM behavior, Modbus TCP gateway setup,
     and the documented OTA firmware upgrade workflow.
+- `reference/zlmcu/`
+  - Source: official ZLMCU/Zorlan pages and downloads fetched on 2026-06-23.
+  - Includes the current ZLAN7110M manual, product page, WiFi category page,
+    ZLVirCom/ZLDevManage docs and tool archives, MQTT/JSON, Modbus gateway,
+    ZLMB HTML, firmware update, and setup/debug utilities.
+  - For WiFi configuration implementation, start at
+    `reference/zlmcu/wifi/IMPLEMENTATION_NOTES.md`; it records the usable
+    ZLDevManage `PARAM_WIFI_*` IDs, Rev.4 UDP `user_param` TLV encoding,
+    `wifi.txt`/`param.txt` formats, and remaining file-upload protocol gap.
+  - See `reference/zlmcu/README.md` for source URLs and notes on vendor docs
+    referenced by the manual but not publicly linked.
 
 ## Project References
 

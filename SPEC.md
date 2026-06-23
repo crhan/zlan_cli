@@ -4,10 +4,10 @@ ZLAN（上海卓岚 / zlmcu）串口服务器 / 联网模块管理命令行工�
 本文件是写代码前的权威依据。任何与本文不符的实现以本文为准；本文与设备真机行为不符的，以真机为准并回写本文 + agent 须知(`CLAUDE.md`/`AGENTS.md`)。
 
 数据来源：
-- 《卓岚联网产品 UDP 管理端口协议》ZL DUI 20100427.1.0 Rev.3（下称 **UDP 文档**）
+- 《卓岚联网产品 UDP 管理端口协议》ZL DUI 20100427.1.0 Rev.4（下称 **UDP 文档**）
 - 《串口修改参数及硬件 TCPIP 协议栈》ZL DUI 20090825.3.0 Rev.3（下称 **串口文档**）
 
-两份文档共享同一个 167 字节参数结构（图2 / 编号说明 / `struct SSServerParam` 三处一致），但帧格式、命令码两套各不相同。
+两份文档共享同一个 167 字节参数结构（图2 / 编号说明 / `struct SSServerParam` 三处一致），但帧格式、命令码两套各不相同。UDP Rev.4 新增说明了 `user_param@115` 的 52 字节可变 TLV 区，WiFi 参数就在这里。
 
 ---
 
@@ -86,12 +86,12 @@ ZLAN（上海卓岚 / zlmcu）串口服务器 / 联网模块管理命令行工�
 | 48 | 1 | `parity` | param_parity | enum | 见表 B（**两文档矛盾，待验证**） | |
 | 49 | 1 | `gap_time` | ...interval | u8 | 串口打包间隔 | |
 | 50 | 2 | `packing_len` | param_max_data_len | u16be | 1..1400 | 打包长度 |
-| 52 | 1 | `f_end_en` | param_fram_end_en | u8 | 0/1 | **V1.472 起失效** |
-| 53 | 1 | `f_end_byte` | param_frame_end_byte | u8 | | V1.472 起失效 |
-| 54 | 1 | `f_start_en` | param_fram_start_en | u8 | 0/1 | V1.472 起失效 |
-| 55 | 1 | `f_start_byte` | param_frame_start_byte | u8 | | V1.472 起失效 |
+| 52 | 1 | `f_end_en` | param_fram_end_en | u8 | 0/1 | **V1.472 起帧尾功能失效** |
+| 53 | 1 | `f_end_byte` | param_frame_end_byte | u8 | | V1.472 起帧尾功能失效 |
+| 54 | 1 | `f_start_en` / `rs485_half_gap` | param_fram_start_en | u8 | 0..255 | 旧帧首有效位；Rev.4/DLL 作为 485 半双工等待时间(`PARAM_485_GAP`) |
+| 55 | 1 | `f_start_byte` / `rs485_timeout` | param_frame_start_byte | u8 | 0..255 | 旧帧首字符；Rev.4/DLL 作为 485 等待最长时间(`PARAM_485_TIME_OUT`) |
 | 56 | 1 | `dhcp_en` | param_ip_mode | enum | 0=静态 IP,1=DHCP | |
-| 57 | 1 | `flow_ctrl` | param_flow_control | enum | 0=无,1=CTS/RTS | |
+| 57 | 1 | `flow_ctrl` | param_flow_control | enum | 0=无,1=CTS/RTS,2=DSR/DTR,3=XON/XOFF | |
 | 58 | 1 | `dest_mode` | param_dest_dynamic | enum | 0=静态,1=动态 | |
 | 59 | 1 | `data_bits` | param_data_bits | enum | **0=8bit,1=7bit,2=6bit,3=5bit**（反序，查表） | |
 | 60 | 1 | `app_proto` | app_protocol | enum | 0=透明,1=Modbus TCP↔RTU,2=RealCom | |
@@ -111,8 +111,10 @@ ZLAN（上海卓岚 / zlmcu）串口服务器 / 联网模块管理命令行工�
 | 110 | 1 | `func_en` | func_en | bitfield | 见表 D | 可写使能位 |
 | 111 | 1 | `sm_param_t` | server_mode_param_t | u8 | 中心服务器发参间隔（分钟） | |
 | 112 | 1 | `func_sel2` | func_sel2 | bitfield(readonly) | 见表 E | 只读高级功能位 |
-| 113 | 2 | `reserve` | var1[2] | opaque | 保留 | 纯透传不动 |
-| 115 | 52 | `user_param` | var2[52] | opaque | 用户区（注册包/心跳包等） | 纯透传不动 |
+| 113 | 1 | `multi_host_wait` | var1[0] / maxwait | u8 | 0=关闭,1=25ms,2=50ms | 485 多主机时间 |
+| 114 | 1 | `stop_bits` | var1[1] / OtherBits | stopbits | bit0=0→1 位,bit0=1→2 位 | CLI 写入只改 bit0、保留其它位 |
+| 113 | 2 | `reserve` | var1[2] | opaque | 原始保留区 | 纯透传不动；与 `multi_host_wait`/`stop_bits` 同区间 |
+| 115 | 52 | `user_param` | var2[52] | tlv/opaque | 可变用户区（WiFi / 多目的 IP / 计数器等） | 见 §3.1；未知 TLV 纯透传 |
 
 合计 115 + 52 = **167** ✓
 
@@ -128,10 +130,68 @@ ZLAN（上海卓岚 / zlmcu）串口服务器 / 联网模块管理命令行工�
 `bit0`网页下载 `bit1`DNS `bit2`REAL_COM `bit3`Modbus TCP转RTU `bit4`串口改参 `bit5`DHCP `bit6`存储扩展EX `bit7`多TCP连接
 
 ### 表 D — func_en（可写）
-`bit0`数据重启功能 `bit1`向中心服务器发参 `bit2`修改参数需密码 `bit3`UDP 进制接收广播包
+`bit0`数据重启功能 `bit1`向中心服务器发参 `bit2`修改参数需密码 `bit3`UDP 进制接收广播包 `bit4`P2P `bit5`连接上发送 MAC `bit6`ping 检测断网 `bit7`连接上时不清空缓存
 
 ### 表 E — func_sel2（只读）
-`bit0`IO 配置 `bit1`UDP 组播 `bit2`多目标 IP
+`bit0`IO 配置 `bit1`UDP 组播 `bit2`多目标 IP `bit3`代理服务器 `bit4`SNMP `bit5`P2P
+
+### 3.1 user_param@115 可变 TLV 区（UDP Rev.4）
+
+`user_param` 是参数块 offset 115..166 的 52 字节区域。Rev.4 将它定义为连续 TLV：
+
+`type 1B | len 1B | value lenB | ... | type=0 结束 | 后续补 0`
+
+写入仍走普通 UDP `0x02` 整块写：先 `0x04` 读整块，修改 `user_param` TLV，保持参数总长 167，再写回。不要把 WiFi 当作固定 offset 字段加入主字段表。
+
+已知 TLV 类型：
+
+| type | 名称 | 说明 |
+|---:|---|---|
+| `0` | 结尾 | 停止解析 |
+| `1` | 功能选择 | 文档未展开 |
+| `2` | WiFi SSID | 原始 SSID 字节，不带结尾 0 |
+| `3` | WiFi 信道/桥接/DHCP | 1 字节位域，见下 |
+| `4` | WiFi 密码 | 原始密码字节，不带结尾 0 |
+| `5` | WiFi 密码类型 + STA/AP | 1 字节位域，见下 |
+| `6` | 多目的 IP | 文档未展开 |
+| `8` | 代理服务器参数 | 文档未展开 |
+| `9` | 串口发送字节数 | 查询时自动添加，写入时可不填 |
+| `10` | 串口接收字节数 | 查询时自动添加，写入时可不填 |
+| `255` | 自定义 | 厂家/用户自定义 |
+
+TLV type `3`（信道/桥接/DHCP）长度为 1：
+
+- `bit0..bit3`：WiFi 信道号（文档示例直接用信道 4 编码为低半字节 `4`）
+- `bit6=1`：关闭 DHCP Server（注意 1 表示关闭）
+- `bit7=1`：开启以太网/WiFi 互通桥接
+
+例：`03 01 44` = 信道 4、桥接关闭、DHCP Server 关闭。
+
+TLV type `5`（密码类型 + STA/AP）长度为 1：
+
+- `bit0..bit5`：密码类型
+- `bit6=1`：AP 模式
+- `bit7=1`：STA 模式
+
+密码类型取值（这是 Rev.4 TLV 线上编码，注意与 ZLDevManage DLL UI 顺序不同）：
+
+| 值 | 含义 |
+|---:|---|
+| `0` | 无加密 |
+| `1` | WEP64 |
+| `2` | TKIP |
+| `4` | AES |
+| `5` | WEP128 |
+| `6` | 自动 |
+
+例：`05 01 86` = STA 模式 + 自动密码；`05 01 40` = AP 模式 + 无加密。
+
+实现要求：
+
+- 解析器必须容忍未知 TLV，写回时尽量保留未知 TLV；
+- 重建后必须不超过 52 字节，并以 `type=0` 结束、剩余补 0；
+- 查询包中的 type `9`/`10` 计数器是状态类数据，写 WiFi 时可不主动生成；
+- WiFi 写命令应走专用 TLV builder，不走普通 `SetField` 固定偏移。
 
 ---
 
@@ -139,11 +199,11 @@ ZLAN（上海卓岚 / zlmcu）串口服务器 / 联网模块管理命令行工�
 
 每个字段一条记录：`{name, offset, size, kind, readonly, enc, dec, validate}`。
 
-- **kind**：`ipv4 | u16be | u32be | u8 | enum | cstring | rawbytes | bitfield | opaque`
-- **enc/dec**：枚举/反序字段用查表（baud、parity、data_bits），不用线性公式
+- **kind**：`ipv4 | u16be | u32be | u8 | enum | cstring | rawbytes | bitfield | opaque | tlv`
+- **enc/dec**：枚举/反序字段用查表（baud、parity、data_bits、flow_ctrl），不用线性公式；`stop_bits` 只改 OtherBits bit0，保留其它未知位
 - **validate**：枚举走白名单；IP 走格式；`packing_len`∈[1,1400]；`group_ip`∈[224.x,239.x]；端口∈[0,65535]
 - **位域子字段**：`func_en`/`io_set`/`func_sel`/`func_sel2` 是容器，其下挂子字段如 `func_en.need_password = {byte:110, bit:2}`。set 位域 = 读回容器字节 → 改位 → 写回；CLI 也接受整字节 `func_en=0x05`
-- **cstring**：写时补 0、清掉旧残留；`dev_name` 兼容厂家工具 GBK/ANSI 中文名；**rawbytes（key）**：定长，不足补 0x00 但不主动清零未改部分；**opaque（reserve/user_param）**：只透传，永不主动改
+- **cstring**：写时补 0、清掉旧残留；`dev_name` 兼容厂家工具 GBK/ANSI 中文名；**rawbytes（key）**：定长，不足补 0x00 但不主动清零未改部分；**opaque（reserve/未知 user_param TLV）**：只透传，永不主动改；**TLV（user_param）**：只由专用 parser/builder 改 WiFi 等子结构
 
 ---
 
@@ -172,6 +232,8 @@ zlan get     <target> <field>             读单字段（脚本友好）；get <
 zlan set     <target> <k=v>...            改配置（持久，会重启），破坏性
 zlan set     <target> --profile modbus-tcp-rtu      套用 Modbus TCP→RTU 常用网关配置
 zlan tune    <target> baud=.. parity=..   临时串口参数（不存不重启，断电恢复）
+zlan wifi get <target> [--show-key]       读取 user_param@115 中的 WiFi TLV 参数
+zlan wifi set <target> ssid=.. key=.. mode=sta crypt=auto channel=.. dhcp_server=disabled bridge=disabled
 zlan copy    <source> <target> [k=v]...   复制 source 可写配置到 target（默认 dry-run；--confirm 写入）
 zlan export  <target> [-o file]           导出离线配置文件（param_hex 为权威原始参数块）
 zlan import  <target> -f file [k=v]...    从配置文件导入到 target（默认 dry-run；--confirm 写入）
@@ -197,6 +259,8 @@ zlan completion [bash|zsh|fish]           shell 补全（cobra 自动）
 | info/get | 0x04 单播 / 0x00 广播匹配 | 0x00 读 | 否 | 否 |
 | set | 0x02（读-改-写整块） | 0x03（写+存；网络字段自动重启） | UDP:是 | 是 |
 | tune | 0x03 | 0x01（写不存） | 否 | 否 |
+| wifi get | 0x04 后解析 `user_param@115` TLV | 0x00 读整块后解析 TLV | 否 | 否 |
+| wifi set | 0x04 读整块→改 `user_param@115` TLV→0x02 整块写 | 0x00 读整块→写 `user_param@115` 段 | UDP:是 | 是 |
 | copy | 源/目标读参后按 set 逻辑写 target；保留 target 的 devid/只读字段 | 暂不支持 `--serial`（需同时访问两台） | 依字段 | 是 |
 | export/import | export 单台读参生成文件；import 读文件后按 copy 逻辑写 target | import 支持单台串口目标；export 支持串口读参 | 依字段 | 是 |
 | reboot | 0x04 读回→改 0x02 回发（§3.5） | 0x07 `07 1f 01 00`（§3.7） | 是 | UDP:是 |
@@ -378,12 +442,13 @@ UDP 应答字段锚点（UDP §3.1，尾部 `…8a b6 e6` 对齐到 @100，确�
 
 ## 17. 待真机验证清单（诊断纪律：以下为推定，非确认）
 
-1. **parity 编码 1/2**：UDP 文档 Even/Odd 与串口文档 Odd/Even 相反（表 B）。一次 `set parity=odd` 读回即可定。
+1. **parity 编码 1/2**：UDP 文档 Even/Odd 与串口文档/ZLDevManage demo UI Odd/Even 相反（表 B）。一次 `set parity=odd` 读回即可定。
 2. **串口单帧读/写上限**:文档证实可一次写 104B(§3.6),167B 整块未演示 → 实现用分段 + 保守上限规避。
 3. **写后 ACK 行为**:0x02/0x03/0x07 写完是否回 ACK,还是无响应直接重启 → 影响"写入已确认"判定;当前靠读回校验。
 4. **96/97 顺序**：双文档标注已确认（§9），真机 `set recon=15,keep_alive=90` 读回为最终确认。
 5. **改参密码编码**:func_en bit2 触发条件 + 密码如何编码进 key@21 → 文档缺失。
 6. **设备应答端口**:文档(UDP 表1 0x01)称"PC 在发送广播的端口收到应答" → discover 用临时源端口,与 monitor(:1092)不冲突;真机确认。
+7. **WiFi TLV 实机行为**:Rev.4 已给线上编码；仍需真机确认 7110M 当前固件是否完全按该 TLV 写入生效、SDK 枚举是否只是 DLL 层转换。
 
 ---
 
@@ -398,6 +463,7 @@ UDP 应答字段锚点（UDP §3.1，尾部 `…8a b6 e6` 对齐到 @100，确�
 - 改 IP/掩码/网关/DHCP/DNS → 设备必重启,断连是预期不是错误。
 - 大端 + 1 字节对齐;codec 按 offset 手动,不靠 struct 内存布局。
 - `data_bits` 反序:0/1/2/3 = 8/7/6/5 bit。
-- `ver` 换算 = 383 + ver;F_start/F_end(52-55)V1.472 后失效。
+- `ver` 换算 = 383 + ver;F_end(52-53)帧尾功能 V1.472 后失效;F_start(54-55)在 Rev.4/DLL 中复用为 485 参数。
 - 单播必须用 discover 拿到的 `*net.UDPAddr`,外网设备别 Dial 到 IP:1092。
 - baud 表含非标准 7200(index 3),用查表别用公式。
+- `user_param@115` 是 Rev.4 TLV 区；WiFi 是 TLV 子结构，**不是固定 offset 字段**。未知 TLV 必须保留，不要清空 52 字节尾区。

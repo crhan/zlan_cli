@@ -29,6 +29,9 @@ var capabilityDefs = []capabilityDef{
 	{Field: "func_sel2.io_config", Name: "io_config", Desc: "IO 配置"},
 	{Field: "func_sel2.udp_multicast", Name: "udp_multicast", Desc: "UDP 组播"},
 	{Field: "func_sel2.multi_target_ip", Name: "multi_target_ip", Desc: "多目标 IP"},
+	{Field: "func_sel2.proxy_server", Name: "proxy_server", Desc: "代理服务器"},
+	{Field: "func_sel2.snmp", Name: "snmp", Desc: "SNMP"},
+	{Field: "func_sel2.p2p", Name: "p2p", Desc: "P2P"},
 }
 
 type capabilityJSON struct {
@@ -146,8 +149,7 @@ func unknownCapabilityBits(p *protocol.Param) map[string]string {
 	if bits := unknownBits(get(p, "func_sel"), 0xff); bits != "" {
 		unknown["func_sel"] = bits
 	}
-	// func_sel2 currently documents bits 0..2 only.
-	if bits := unknownBits(get(p, "func_sel2"), 0x07); bits != "" {
+	if bits := unknownBits(get(p, "func_sel2"), 0x3f); bits != "" {
 		unknown["func_sel2"] = bits
 	}
 	if len(unknown) == 0 {

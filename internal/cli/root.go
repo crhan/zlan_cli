@@ -34,6 +34,7 @@ func NewRootCmd() *cobra.Command {
   zlan capabilities                          对比当前设备能力位
   zlan info 192.168.1.200                    查看设备完整参数
   zlan set 192.168.1.200 dest_port=4196      改配置(会重启设备)
+  zlan wifi get 192.168.1.200                查看 WiFi 参数
   zlan copy 192.168.1.200 192.168.1.201      复制配置(dry-run)
   zlan export 192.168.1.200 -o backup.yaml   导出配置备份
   zlan info --serial /dev/cu.usbserial-1410  通过串口直连查看`,
@@ -67,6 +68,7 @@ func NewRootCmd() *cobra.Command {
 		newGetCmd(g),
 		newSetCmd(g),
 		newTuneCmd(g),
+		newWiFiCmd(g),
 		newCopyCmd(g),
 		newExportCmd(g),
 		newImportCmd(g),

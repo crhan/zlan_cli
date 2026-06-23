@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="MQTT网关的使用方法——嵌入式设备联网解决方案" />
+    <meta name="keywords" content="MQTT网关的使用方法,mqtt转Modbus,mqtt转485,mqtt转串口,mqtt数据采集器" />
+    <title>MQTT网关的使用方法,mqtt转Modbus,mqtt转485,mqtt转串口,mqtt数据采集器</title>
+	<link href="/css/slick.css"  rel="stylesheet"/>
+    <link href="/css/slick-theme.css"  rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/base-v1.3.css">
+    <link rel="stylesheet" href="../css/style.css">
+	 
+	<link rel="stylesheet" href="../font-awesome-4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="shortcut icon" href="../images/favicon.ico" />
+	<script type="text/javascript" src="/js/jquery.min.js"></script>
+	<!--二维码弹出js	-->
+	<script type="text/javascript"> 
+	function showImg(){ 
+	document.getElementById("wxImg").style.display='block'; 
+	} 
+	function hideImg(){ 
+	document.getElementById("wxImg").style.display='none'; 
+	} 
+	</script>
+</head>
+<body>
+<div id="wx_pic" style="margin:0 auto;display:none;">
+<img src="../images/test.jpg"/>
+</div>
+<!-- PC头部 -->
+<header>
+	<div class="head-top clearfix">
+		
+		<ul class="left">
+			<li><i class="fa fa-phone fa-lg"></i><span>400-601-5103</span></li>
+			<li><i class="fa fa-envelope-o fa-lg"></i><span>sales@zlmcu.com</span></li>
+			<li><a style="color: #ffffff;font-size: 14px;line-height: 40px;" href="https://zlan.tmall.com/shop/view_shop.htm"><i class="fa fa-shopping-cart fa-lg"></i><span>在线商城</span></a></li>
+		</ul>
+		<ul class="right">
+			<li href="javascript:void(0)" onMouseOut="hideImg()" onmouseover="showImg()"><i class="fa fa-weixin fa-lg"></i></li>
+			<a target="_blank" href="http://wpa.qq.com/msgrd?v=3&uin=3236343438&site=qq&menu=yes"><li ><i class="fa fa-qq fa-lg"> </i></li></a>
+			<!--<li><a href="https://zlan.tmall.com/" target="_blank"><img src="images/taobao2.svg" height="20" alt=""></a></li>-->
+		</ul>
+	</div>
+	
+	<!--鼠标悬停图标显示二维码效果-->
+	<div id="wxImg" class="weixin_nr" >
+	<div class="arrow"></div>
+	<img src="../images/QRcode.jpg" width="100" height="100" />
+	<div style="margin-top: 5px">关注官方微信</div>
+	</div> 
+	
+	
+	<div class="head-bottom clearfix">
+		<a href="../default.htm"><div class="logo">
+			<img src="../images/zlan.svg" class="act-hide" alt="">
+			<img src="../images/zlan2.svg" class="act-show" alt="">
+		</div></a>
+		<ul class="head-nav">
+			<li>
+				<a href="../default.htm">首页</a>
+			</li>
+			<li>
+				<a href="../about_zorlan.htm">关于卓岚</a>
+				<ul class="nav-down">
+					<a href="../about_zorlan.htm"><li>公司简介</li></a>
+					<a href="../about_development.htm"><li>发展历程</li></a>
+					<a href="../about_certificate.htm"><li>公司证书</li></a>
+					<a href="../news.htm"><li>企业动态</li></a>
+				</ul>
+			</li>
+			<li>
+				<a href="../products.htm">产品中心</a>
+				<div class="nav-down">
+					<ul class="cp-down clearfix">
+						<li>
+							<a href="../products_netcom.htm"><p class="img"><img src="../images/nav_01.png" alt=""></p><p class="p1">单串口服务器</p></a>
+							<a href="../products_modbus.htm"><p class="img"><img src="../images/nav_06.png" alt=""></p><p class="p1">Modbus网关</p></a>
+						</li>
+						<li>
+							<a href="../products_netcom.htm#type5"><p class="img"><img src="../images/nav_02.png" alt=""></p><p class="p1">多串口服务器</p></a>
+							<a href="../products_wifi.htm"><p class="img"><img src="../images/nav_07.png" alt=""></p><p class="p1">WiFi产品</p></a>
+						</li>
+						<li>
+							<a href="../products_chip.htm"><p class="img"><img src="../images/nav_03.png" alt=""></p><p class="p1">物联网芯片</p></a>
+							<a href="../products_4G_DTU.htm"><p class="img"><img src="../images/nav_08.png" alt=""></p><p class="p1">4G 产品</p></a>
+						</li>
+						<li>
+							<a href="../products_p2p.htm"><p class="img"><img src="../images/nav_04.png" alt=""></p><p class="p1">P2P联网产品</p></a>
+							<a href="../#"><p class="img"><img src="../images/nav_09.png" alt=""></p><p class="p1">Zigbee/RF产品</p></a>
+						</li>
+						<li>
+							<a href="../products_core_module.htm"><p class="img"><img src="../images/nav_05.png" alt=""></p><p class="p1">以太网核心模块</p></a>
+							<a href="../products_fiber.htm"><p class="img"><img src="../images/nav_10.png" alt=""></p><p class="p1">光纤产品</p></a>
+						</li>
+					</ul>
+				</div>
+			</li>
+			<li>
+				<a href="../solutions.htm">解决方案</a>
+				<div class="nav-down">
+					<ul class="cp-down">
+						<li>
+							<a href="../solutions.htm"><p class="img"><img src="../images/PLC.svg" alt=""></p><p class="p1">PLC联网</p></a>
+							<a href="../solutions.htm"><p class="img"><img src="../images/gongyouyun.svg" alt=""></p><p class="p1">公有云连接方案</p></a>
+						</li>
+						<li>
+							<a href="../solutions.htm"><p class="img"><img src="../images/zhihuidianli.svg" alt=""></p><p class="p1">智慧电力</p></a>
+							<a href="../solutions.htm"><p class="img"><img src="../images/nongye03.svg" alt=""></p><p class="p1">智慧农业</p></a>
+						</li>
+						<li>
+							<a href="../solutions.htm"><p class="img"><img src="../images/wulianwang.svg" alt=""></p><p class="p1">工业物联网</p></a>
+							<a href="../solutions.htm"><p class="img"><img src="../images/shouji.svg" alt=""></p><p class="p1">手机与物联网</p></a>
+						</li>
+						<li>
+							<a href="../solutions.htm"><p class="img"><img src="../images/chengshi.svg" alt=""></p><p class="p1">智慧城市</p></a>
+							<a href="../solutions.htm"><p class="img"><img src="../images/huanbao2.svg" alt=""></p><p class="p1">智慧环保</p></a>
+						</li>
+						<li>
+							<a href="../solutions.htm"><p class="img"><img src="../images/nengyuan03.svg" alt=""></p><p class="p1">智慧能源</p></a>
+							<a href="../solutions.htm"><p class="img"><img src="../images/huandong.svg" alt=""></p><p class="p1">环动监控</p></a>
+						</li>
+					</ul>
+				</div>
+			</li>
+			<li>
+				<a href="../document.htm">技术支持</a>
+				<ul class="nav-down">
+					<a href="../download.htm"><li>资料下载</li></a>
+					<a href="../document.htm"><li>文档中心</li></a>
+					<a href="../video.htm"><li>视频中心</li></a>
+					<a href="../type_search.htm"><li>型号搜索</li></a>
+				</ul>
+			</li>
+			<li><a href="../contatct_us.htm">联系我们</a></li>
+			<li><a href="../type_search.htm"><i class="fa fa-search"></i> 搜索</a></li>
+		</ul>
+		<a href="http://www.zlan-iot.com/"><p class="language">EN</p></a>
+	</div>
+</header>
+<!-- pad phone版头部 -->
+<header class="header2  clearfix">
+	<div class="logo">
+		<a href="../default.htm">
+			<img src="../images/zlan2.svg"></a>
+	</div>
+	<div class="phlanguage">
+		<a href="http://www.zlan-iot.com/">EN.</a>
+	</div>
+	<div class="menuph clearfix" id="menuph">
+		<div class="point" id="mbtn">
+			<span class="navbtn"></span>
+		</div>
+	</div>
+</header>
+	<!--手机版下拉-->
+<div class="d-menu-ul">
+	<div class="d-xialaph">
+		<ul class="d-ul1">
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						<a href="../default.htm">首页</a>
+					</h4>
+				</div>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						关于卓岚
+						<img class="img_s" src="../images/SJ_xiala_jia.png">
+						<img class="img_d" src="../images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<!-- 二级 -->
+				<ul class="d-ul2">
+					<div class="containere">
+						<li><a href="../about_zorlan.htm"><h5>公司简介</h5></a></li>
+						<li><a href="../about_development.htm"><h5>发展历程</h5></a></li>
+						<li><a href="../about_certificate.htm"><h5>公司证书</h5></a></li>
+						<li><a href="../news.htm"><h5>企业动态</h5></a></li>
+					</div>
+				</ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						<!--产品中心-->
+						产品中心
+						<img class="img_s" src="../images/SJ_xiala_jia.png">
+						<img class="img_d" src="../images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<!-- 二级 -->
+				<ul class="d-ul2">
+					<li>
+						<div class="containere">
+							<a href="../products_netcom.htm"><h5>单串口服务器</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../serialserver.htm"><h5>多串口服务器</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_chip.htm"><h5>物联网芯片</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_p2p.htm"><h5>P2P联网产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_core_module.htm"><h5>串口以太网核心模块</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_serial_server.htm"><h5>以太网串口模块</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_wifi.htm"><h5>WiFi产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_4G_DTU.htm"><h5>4G 产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../#"><h5>Zigbee/RF产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_fiber.htm"><h5>光纤产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_modbus.htm"><h5>Modbus网关</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_remote_io.htm"><h5>远程IO控制器</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="../products_converter.htm"><h5>接口转换器</h5></a>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					
+					<h4>
+						解决方案
+						 <img class="img_s" src="../images/SJ_xiala_jia.png">
+                         <img class="img_d" src="../images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<ul class="d-ul2">
+                     <div class="containere">
+                         <li><a href="../solutions.htm"><h5>公有云连接方案</h5></a></li>
+                         <li><a href="../solutions.htm"><h5>智慧电力</h5></a></li>
+                         <li><a href="../solutions.htm"><h5>工业物联网</h5></a></li>
+                         <li><a href="../solutions.htm"><h5>智慧城市</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>智慧能源</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>PLC联网</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>智慧农业</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>手机与物联网</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>智慧环保</h5></a></li>
+						 <li><a href="../solutions.htm"><h5>环动监控</h5></a></li>
+                     </div>
+                </ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						技术支持
+						<img class="img_s" src="../images/SJ_xiala_jia.png">
+						<img class="img_d" src="../images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<!-- 二级 -->
+				<ul class="d-ul2">
+					<div class="containere">
+						<li><a href="../download.htm"><h5>资料下载</h5></a></li>
+						<li><a href="../document.htm"><h5>文档中心</h5></a></li>
+					</div>
+				</ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<a href="../contatct_us.htm">
+						<h4>
+						联系我们
+						</h4>
+					</a>
+				</div>
+			</li>
+		</ul>
+	</div>
+</div>
+<div class="phonemeng"></div>
+<!-- banner -->
+<section class="ny-banner">
+    <img src="../images/B31_01.jpg" class="phone-hide" alt="">
+    <img src="../images/banner5.jpg" class="phone-show" alt="">
+</section>
+<!-- 内容 -->
+<section class="b1-container clearfix">
+<!--左侧导航版块--><div id="page1"> </div>
+	<script>
+  		 $("#page1").load("/include.html");
+	</script><!--左侧导航版块-->
+<!--右侧内容-->
+<div class="right">
+	<div class="product_d">
+    <h3>MQTT网关的使用方法</h3>
+    <h5>
+        <span>发布时间：2019-08-27</span>
+        <span>作者：上海卓岚</span>
+        <span>浏览量：12685</span>
+    </h5>
+	<div class="title">1.概述</div>
+	<p>MQTT是一种发布（publish）/订阅(subscribe)协议，MQTT协议采用发布/订阅模式，所有的物联网终端都通过TCP连接到云端，云端通过主题的方式管理各个设备关注的通讯内容，负责将设备与设备之间消息的转发。MQTT 协议解决了物联网中一个最基础的问题：设备和设备之间、设备和云端服务之间是如何进行数据通讯的。</p>
+	<p><img src="pic/MQTT.jpg" alt="JSON数据采集网关工作原理示意图"/></p>
+	<p>MQTT网关起到将普通的串口数据、Modbus RTU数据等转化为MQTT协议的作用，通过连接服务器、订阅和发布主题来实现传统设备和MQTT云端的联系。例如，笔记本和手机都向MQTT服务器订阅了消息主题为温度的消息，当MQTT网关向这个服务器发布温度传感器的消息（当前温度为21℃），笔记本和手机都会收到发布的温度。卓岚的MQTT产品可以充当本地设备和MQTT云服务器之间的桥梁。</p>
+		<div class="tt" style="margin-bottom: 10px"><h1>卓岚的MQTT网关种类繁多，有如下几种类型：</h1></div>
+		<table width="650" style="margin-bottom: 10px">
+		  <tr>
+			<th width="500" scope="col"><strong>类型</strong></th>
+			<th width="150" scope="col"><strong>型号</strong></th>
+			
+		  </tr>
+		  <tr>
+			<th scope="row">4G DTU</th>
+			<td><a href="../products_ZLAN8303.htm">ZLAN8303-7 ↴</a></td>
+		  </tr>
+		  <tr>
+			<th scope="row">以太网</th>
+			<td><a href="../products_ZLAN5143.htm">ZLAN5143 ↴</a></td>
+		  </tr>
+		  <tr>
+			<th scope="row">Wifi+以太网</th>
+			<td><a href="../products_ZLAN7104.htm  ">ZLAN7144 ↴</a></td>
+		  </tr>
+		  <tr>
+			<th scope="row">Wifi</th>
+		    <td><a href="../products_ZLAN7146.htm">ZLAN7146 ↴</a></td>
+		  </tr>
+		  <tr>
+			<th scope="row">内嵌MQTT网关模块（以太网）</th>
+			<td><a href="../products_ZLSN2003.htm">ZLSN2043S ↴</a></td>
+		  </tr><tr>
+			<th scope="row">内嵌MQTT网关模块（wifi）</th>
+		  <td><a href="../products_ZLSN7046T.htm">ZLSN7046T ↴</a></td>
+		  </tr><tr>
+			<th scope="row">内嵌MQTT网关模块（wifi+以太网）</th>
+			<td><a href="../products_ZLSN7044.htm">ZLSN7044 ↴</a></td>
+		  </tr><tr>
+			<th scope="row">MQTT网关单芯片</th>
+			<td><a href="../products_ZLAN1043.htm">ZLAN1043 ↴</a></td>
+		  </tr><tr>
+			<th scope="row">MQTT数据采集网关（8路模拟量输入、数字量输入/输出）</th>
+			<td><a href="../products_ZLAN6844.htm">ZLAN6844 ↴</a></td>
+		  </tr>
+		</table>
+	<p>除了数据采集网关通过模拟量和数字量对外接口外，其它MQTT网关都采用串口（RS485、RS232、RS422、TTL）来和设备对接。支持MQTT云平台有百度云、阿里云等。</p>	
+		
+	<div class="title2">卓岚MQTT网关的特色在于，不仅支持透传，而且支持将各类串口协议转化为JSON格式。且支持设备的自动采集。举个例子来说，如果温度传感器采用的是Modbus RTU格式的串口协议，需要解决两个问题：</div>
+		<p>1.自动采集：温度传感器采用的Modbus RTU协议需要每隔一段时间去询问设备，获得当前温度。但MQTT协议属于有消息就发布的机制MQTT服务器无法担任这个任务，必须让MQTT网关自动查询温度传感器，并将获得数据存储起来，并定时上发服务器。卓岚MQTT网关可配置Modbus轮询指令或者非标准的串口设备指令。</p>
+		<p>2.格式转化：设备端采用的是十六进制指令，比如01 03 02 12 34 b5 33的数据，这种数据对于云端比较难统一和识别。卓岚MQTT网关支持将Modbus RTU数据转化为JSON格式后上发，比如以上十六进制数据变为：{“power”:”1234”}这种格式。</p>
+		
+	<div class="title2">总结一下卓岚MQTT网关主要特点是：</div>	
+		<p>1.采用MQTT为基础的协议和服务器建立连接，采用订阅发布的形式进行数据通讯。</p>
+		<p>2.支持Modbus RTU寄存器的自主设计和自动采集。</p>
+		<p>3.支持将特定的Modbus寄存器内容转化为JSON格式定时主动上发。</p>
+		<p>4.支持在JSON格式中加入设备ID，方便云端识别设备。</p>
+		<p>5.支持无符号数据和有符号数据，支持小数点表示，支持4字节长度数据。</p>
+		<p>6.所有配置都可以界面化配置完成，用户自主配置无需定制。</p>
+	<br><br><br>	
+	
+	<div class="title">2.MQTT用法实例</div>
+	<p>MQTT可以单独使用也可以和JSON功能配合使用。当单独使用的时候MQTT功能将串口数据透传上发MQTT服务器。也就是将串口接收的数据作为MQTT的载荷。同时MQTT的载荷会以透传的方式从串口输出。实现串口转MQTT。</p>
+	<div class="title2">设备配置</div>
+	<p>首先搜索到设备，然后点击编辑设备：</p>
+	<p><img src="pic/mqtt01.png"  alt=""></p>
+	<p>点击“固件与配置”，弹出配置下载和设计对话框：</p>
+	<p><img src="pic/mqtt02.png" alt=""></p>
+	<p>这里选择“网页目录下载”，然后选择一个空的目录，比如MQTTHTTPD目录，然后先点击“清除全部”清除之前的设计（注意如果之前按有JSON设计的，则不要清除全部，否则会清除之前的JSON设计）。然后点击MQTT配置。</p>
+	<p><img src="pic/mqtt03.png" alt=""></p>
+	<p>这里配置说明如下：<br>1.服务器域名或IP：这里填写的是MQTT服务器的IP，最长为30个字符。<br>2.用户名：是MQTT服务器的用户名。<br>3.密码：是这个用户的登录密码。<br>4.客户端ID：是MQTT的client ID。<br>5.订阅主题：是这个设备订阅的主题，有其它设备发布这个主题的时候，服务器会下发给这个设备。如果只是发布，一般无需填写这个字段。<br>6.发布主题：这个设备串口转MQTT的时候向服务器发送的数据的主题。<br>7.MQTT高级参数：用于配置高级参数。<br>8.保存MQTT设置：设计完毕点击这个按钮进行保存，然后点击网页下载目录的“下载按钮”下载。</p><br><br><br>
+		
+	<p>现在先点击“MQTT高级参数”（一般无需配置高级参数）：</p>
+	<p><img src="pic/mqtt04.png" alt=""></p>
+	<p>说明如下：<br>1.协议版本：目前主流的是3.1.1版本，如果需要选择3.1版本，请在这里选择。<br>2.保活时间：MQTT的心跳时间，最少为10秒，默认为60秒。<br>3.服务器清除订阅：客户端断线后服务器是否清除订阅信息。<br>4.是否启用遗愿：是否有遗愿。<br>5.遗愿主题：遗愿主题。<br>6.遗愿信息：遗愿的信息。<br>7.是否保存遗愿：服务器是否需要保持客户端异常离线时发送给客户端的遗愿消息。<br>8.遗愿质量：服务器发送的遗愿消息的交付质量级别。<br>9.订阅质量：订阅的交付质量级别。有的情况下需要设置为0，防止重传引起断线。<br>10.发布质量：客户端发布消息的交付质量级别。有的情况下需要设置为0，防止重传引起断线。<br>11.是否保存发布：服务器是否保持最后一条消息（如果有新的客户端订阅则发送给客户端）。</p><br><br><br>
+	<p>我们这里不修改高级参数。直接点击“保存MQTT设置”。然后点击“下载”</p>
+	<p><img src="pic/mqtt05.png" alt=""></p>
+	<p>下载完毕点击确定，此时会回到设备管理对话框，看到设备的目的IP、工作模式、目的端口已经自动修改为MQTT的设置：</p>
+	<p><img src="pic/mqtt06.png" alt=""></p>
+    <p>如果没有自动修改则需要在设备编辑对话框下，设置目的IP、工作模式、目的端口。然后点击“修改设置”。</p>
+	<p><img src="pic/mqtt07.png" alt=""></p>
+	<p>这样配置就完成了。</p>
+	<div class="title2">数据测试</div>
+	<p>连接完成后设备的LINK灯（一般为中间的蓝色灯）变亮。说明设备正常连接上MQTT服务器。</p>
+	<p>现在打开串口工具：</p>
+	<p><img src="pic/mqtt08.png" alt=""></p>	
+	<p>使用和设备一样的波特率打开串口，并发送数据“dev send”，此后在接收窗口看到返回的数据“dev send”。这是由于我们将dev send这个信息以zlansub的主题发布给MQTT服务器。但是同时我们的设备也订阅了zlansub这个主题，所以服务器立刻会给我们发送一个订阅信息，订阅信息的内容就是dev send。这个信息作为MQTT的载荷发送下载，通过透传的方式从串口输出。</p>	
+	<p>如果其它设备发布信息过来，这个设备也能够收到数据。</p>	
+	<p>一般来说，用户可以直接将串口指令（比如Modbus RTU）指令直接透传给MQTT服务器。另外也可以使用JSON功能，采用自动Modbus RTU格式采集，定时JSON格式上发的形式。另外也可以找上海卓岚定制一些非标的仪表和上位机协议格式。</p>	
+	<div class="title2">MQTT+JSON</div>	
+	<p>如果需要实现JSON格式嵌套在MQTT中，那么需要在ZLVircom的“网页/程序下载工具”对话框中点击“JSON配置”按钮（就在MQTT配置按钮旁边）。配置的方法参考JSON相关配置文档。</p>	
+	<p>将上述的JSON和MQTT相组合可以实现如下的功能：<br>1.采用MQTT为基础的协议和服务器建立连接，采用订阅发布的形式进行数据通讯。但是封装的是JSON格式数据。<br>2.支持Modbus RTU寄存器的自主设计和自动采集。<br>3.支持将特定的Modbus寄存器内容转化为JSON格式定时主动上发。<br>4.支持在JSON格式中加入设备ID，方便云端识别设备。</p>
+	<p>如果需要MQTT+JSON转Modbus RTU功能的，可以分别设计MQTT和JSON，不分先后次序。设计完一种不要点击“清除设计”按钮，两个设计完，一起点击“下载”按钮下载到设备内容。</p>
+	<p>一般可以下载后手动重启设备，加载设置。</p>
+		
+	</div>
+</div>
+</section>
+<!-- 底部 -->
+<footer class="footer">
+	<div class="footer-main-area" data-background="images/footer-bg.png">
+		<div class="container">
+			<div class="row">
+				<div class="col-xl-4 col-lg-6 col-md-6">
+
+					<div class="widget footer-widget">
+						<img src="images/zlan2.svg" alt="" class="foot-logo">
+
+						<p class="text-light-gray summary mrb-40 mrt-10">上海卓岚信息科技有限公司是一家专业提供工业物联网解决方案，集研发、生产、销售为一体的集团公司。成立于2008年 。公司在采集设备定制、物联网通讯协议设计、物联网方案选型、工业物联网平台开发方面有核心优势，可以提供各类物联网定制项目。</p>
+						<form name="formsearch" method="get" action="../type_search.htm">
+							<input type="search" class="search-input" name="value" size="24" value="请输入搜索内容..." onfocus="if(this.value=='请输入搜索内容...'){this.value='';}" onblur="if(this.value==''){this.value='请输入搜索内容...';}" id="inputString" onkeyup="lookup(this.value);" placeholder="搜索...">
+							<button type="submit" value="Search"><i class="fa fa-search"></i>&nbsp;搜索</button>
+						</form>
+					</div>
+				</div>
+				<div class="col-xl-2 col-lg-6 col-md-6">
+					<div class="widget footer-widget haha">
+						<h5 class="widget-title text-white mrb-30">快速链接</h5>
+						<ul class="footer-widget-list">
+							<li><a href="../serialserver.htm">串口服务器</a></li>
+							<li><a href="../IOT_gateway.htm">物联网网关</a></li>
+							<li><a href="../products_chip.htm">物联网芯片</a></li>
+							<li><a href="../products_ZLSN3007S.htm">超级网口</a></li>
+							<li><a href="../485_ethernet.htm">485转以太网</a></li>
+							<li><a href="../products_serial_server.htm">以太网串口模块</a></li>
+							<li><a href="../products_wifi.htm">串口WIFI模块</a></li>
+							<li><a href="../products_ZLAN9163.htm">485光端机</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-xl-2 col-lg-6 col-md-6">
+					<div class="widget footer-widget haha">
+						<h5 class="widget-title text-white mrb-30">&nbsp;</h5>
+						<ul class="footer-widget-list">
+							<li><a href="../products_4G_DTU.htm">4G DTU</a></li>
+							<li><a href="../products_4G_DTU.htm">4G路由器</a></li>
+							<li><a href="../products_lora.htm">LoRa</a></li>
+							<li><a href="../#">Zigbee</a></li>
+							<li><a href="../products_modbus.htm">Modbus网关</a></li>
+							<li><a href="../products_remote_io.htm">远程IO控制器</a></li>
+							<li><a href="../products_converter.htm">串口转换器</a></li>
+							<li><a href="../products_fiber.htm">光纤收发器</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-xl-4 col-lg-6 col-md-6">
+					<div class="widget footer-widget haha">
+						<h5 class="widget-title text-white mrb-30">联系我们</h5>
+						<address class="mrb-25">
+							<div class="mrb-10"><a href="tel:400-601-5103" class="text-phone">400-601-5103</a></div>
+							<div class="mrb-10"><i class="fa fa-phone mrr-10"></i><a href="tel:021-6432-5189" class="text-phone2">电话：021-6432-5189</a></div>
+							<div class="mrb-10"><i class="fa fa-phone mrr-10"></i><a href="tel:189-3009-4219" class="text-phone2">下班后应急电话：18930094219</a></div>
+							<div class="mrb-10"><i class="fa fa-envelope mrr-10"></i>产品咨询：sales@zlmcu.com</div>
+							<div class="mrb-10"><i class="fa fa-comments mrr-10"></i>技术支持：support@zlmcu.com</div>
+							<div><i class="fa fa-location-arrow mrr-10"></i>上海市闵行区园文路28号世宏金源2001室</div>
+						</address>
+						<ul class="social-list">
+							<li class="one"><a href="javascript:" id="contact_weixin" onclick="openWindow(this)"><i class="fa fa-weixin"></i></a></li>
+							<li class="two"><a href="javascript:" id="contact_skype" onclick="openWindow(this)"><i class="fa fa-skype"></i></a></li>
+							<li class="three"><a class="taobao" href="https://zlan.tmall.com/" target="_blank"><img src="../images/taobao.svg" alt=""></a></li>
+							<li class="four"><a class="jd" href="http://zlaniot.jd.com" target="_blank"><img src="../images/jd.svg" alt=""></a></li>
+						</ul>
+					</div>
+				</div>
+				<div id="light_weixin" class="white_content"><img src="../images/QRcode.jpg" alt=""/></div>
+				<div id="light_skype" class="white_content"><img src="../images/QRcode.jpg" alt=""/></div>
+				<div id="fade" class="black_overlay"  onClick="closeWindow()"></div>
+
+			</div>
+		</div>
+	</div>
+	<div class="footer-bottom-area">
+		<div class="container">
+			<div class="row">
+				<div class="col-xl-6">
+					<span class="text-silver">版权所有@上海卓岚信息科技有限公司 | <a href="http://beian.miit.gov.cn/">沪ICP备11004689号-1</a><script src="https://s121.cnzz.com/stat.php?id=1204382&web_id=1204382&show=pic" language="JavaScript" charset="gb2312"></script></span>
+				</div>
+				<div class="col-xl-6">
+					<span class="text-silver"><a href="../about_zorlan.htm">关于我们</a>&nbsp;&nbsp;&nbsp;<a href="../products.htm">产品中心</a>&nbsp;&nbsp;&nbsp;<a href="../solutions.htm">解决方案</a>&nbsp;&nbsp;&nbsp;<a href="../download.htm">资料下载</a>&nbsp;&nbsp;&nbsp;<a href="../document1.htm">文档中心</a></span>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</footer>
+<!-- totop -->
+<div class="totop1">
+	<p id="toTop"><img src="../images/aa.png" alt=""></p>
+</div>
+<script src="../js/jquery-1.12.4.min.js"></script>
+<script src="../js/slick.min.js"></script>
+<script src="../js/common.js"></script>
+<script  type="text/javascript">
+function openWindow(obj){
+	switch(obj.id)
+	{
+		case 'contact_weixin':
+		skype_or_weixin = "light_weixin";
+		break;
+
+		case 'contact_skype':
+		skype_or_weixin = "light_skype";
+		break;
+	}
+	document.getElementById(skype_or_weixin).style.display='block';
+	document.getElementById('fade').style.display='block';
+}
+function closeWindow(){
+	document.getElementById('light_weixin').style.display='none';
+	document.getElementById('light_skype').style.display='none';
+	document.getElementById('fade').style.display='none';
+}
+</script>
+
+</body>
+</html>

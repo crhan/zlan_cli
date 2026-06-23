@@ -2,7 +2,9 @@ package cli
 
 import (
 	"bytes"
+	"encoding/json"
 	"net"
+	"strings"
 	"testing"
 
 	"zlan/internal/protocol"
@@ -33,6 +35,93 @@ func TestRenderDevicesAlignsCJKNames(t *testing.T) {
 		"28:52:20:39:ae:2f  1803新风  192.168.15.43  tcp-server  9600  1.473  connected\n"
 	if got := buf.String(); got != want {
 		t.Fatalf("renderDevices() mismatch\ngot:\n%s\nwant:\n%s", got, want)
+	}
+}
+
+func TestRenderParamDisplaysDecodedUserParamWithoutRawDuplicates(t *testing.T) {
+	var p protocol.Param
+	records := []protocol.UserTLV{
+		{Type: protocol.UserTLVSerialTxBytes, Value: []byte{0x00, 0x00, 0x00, 0x10}},
+		{Type: protocol.UserTLVSerialRxBytes, Value: []byte{0x00, 0x01, 0x40, 0x97}},
+		{Type: protocol.UserTLVWiFiSSID, Value: []byte("Roland")},
+		{Type: protocol.UserTLVWiFiChannel, Value: []byte{0x44}},
+		{Type: protocol.UserTLVWiFiModeCrypt, Value: []byte{0x86}},
+		{Type: protocol.UserTLVWiFiPassword, Value: []byte("secret")},
+	}
+	if err := p.SetUserTLVs(records); err != nil {
+		t.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	if err := renderParam(&buf, &p, false); err != nil {
+		t.Fatal(err)
+	}
+	got := buf.String()
+	for _, want := range []string{"[wifi]", "ssid", "Roland", "mode", "sta", "crypt", "auto", "key", "<set>"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("renderParam missing %q:\n%s", want, got)
+		}
+	}
+	for _, want := range []string{"serial_tx_bytes", "16", "serial_rx_bytes", "82071"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("renderParam missing %q:\n%s", want, got)
+		}
+	}
+	for _, unwanted := range []string{"[user_param_tlv]", "name=wifi_ssid", "name=serial_tx_bytes", "wifi_password"} {
+		if strings.Contains(got, unwanted) {
+			t.Fatalf("renderParam has duplicated raw TLV %q:\n%s", unwanted, got)
+		}
+	}
+	if strings.Contains(got, "secret") {
+		t.Fatalf("renderParam leaked WiFi key:\n%s", got)
+	}
+
+	var jsonBuf bytes.Buffer
+	if err := renderParam(&jsonBuf, &p, true); err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(jsonBuf.Bytes(), &doc); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := doc["user_param_tlvs"]; ok {
+		t.Fatalf("json should not include raw TLVs when all user_param records are decoded:\n%s", jsonBuf.String())
+	}
+	if _, ok := doc["wifi"]; !ok {
+		t.Fatalf("json missing decoded wifi:\n%s", jsonBuf.String())
+	}
+	if _, ok := doc["serial_counters"]; !ok {
+		t.Fatalf("json missing decoded serial counters:\n%s", jsonBuf.String())
+	}
+}
+
+func TestRenderParamIncludesOnlyUnhandledUserParamTLVs(t *testing.T) {
+	var p protocol.Param
+	records := []protocol.UserTLV{
+		{Type: protocol.UserTLVWiFiSSID, Value: []byte("Roland")},
+		{Type: protocol.UserTLVWiFiChannel, Value: []byte{0x44}},
+		{Type: protocol.UserTLVWiFiModeCrypt, Value: []byte{0x86}},
+		{Type: protocol.UserTLVWiFiPassword, Value: []byte("secret")},
+		{Type: protocol.UserTLVCustom, Value: []byte{0x01, 0x02}},
+	}
+	if err := p.SetUserTLVs(records); err != nil {
+		t.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	if err := renderParam(&buf, &p, false); err != nil {
+		t.Fatal(err)
+	}
+	got := buf.String()
+	for _, want := range []string{"[wifi]", "[user_param_tlv]", "type=255", "name=custom", "value=0102"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("renderParam missing %q:\n%s", want, got)
+		}
+	}
+	for _, unwanted := range []string{"name=wifi_ssid", "name=wifi_channel", "name=wifi_mode_crypt", "name=wifi_password", "secret"} {
+		if strings.Contains(got, unwanted) {
+			t.Fatalf("renderParam included handled TLV %q:\n%s", unwanted, got)
+		}
 	}
 }
 

@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="多功能串口转WIFI模块" />
+    <meta name="keywords" content="多功能串口转WIFI模块" />
+    <title>多功能串口转WIFI模块ZLSN7046</title>
+    <link href="/css/slick.css"  rel="stylesheet"/>
+    <link href="/css/slick-theme.css"  rel="stylesheet"/>
+    <link rel="stylesheet" href="css/base-v1.3.css">
+    <link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="shortcut icon" href="images/favicon.ico" />
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+</head>
+<body>
+<!-- PC头部 -->
+<header>
+	<div class="head-top clearfix">
+		
+		<ul class="left">
+			<li><i class="fa fa-phone fa-lg"></i><span>400-601-5103</span></li>
+			<li><i class="fa fa-envelope-o fa-lg"></i><span>sales@zlmcu.com</span></li>
+			<li><a style="color: #ffffff;font-size: 14px;line-height: 40px;" href="https://zlan.tmall.com/shop/view_shop.htm"><i class="fa fa-shopping-cart fa-lg"></i><span>在线商城</span></a></li>
+		</ul>
+		<ul class="right">
+			<li href="javascript:void(0)" onMouseOut="hideImg()" onmouseover="showImg()"><i class="fa fa-weixin fa-lg"></i></li>
+			<a target="_blank" href="http://wpa.qq.com/msgrd?v=3&uin=3236343438&site=qq&menu=yes"><li ><i class="fa fa-qq fa-lg"> </i></li></a>
+			<!--<li><a href="https://zlan.tmall.com/" target="_blank"><img src="images/taobao2.svg" height="20" alt=""></a></li>-->
+		</ul>
+	</div>
+	
+	<!--鼠标悬停图标显示二维码效果-->
+	<div id="wxImg" class="weixin_nr" >
+	<div class="arrow"></div>
+	<img src="images/QRcode.jpg" width="100" height="100" />
+	<div style="margin-top: 5px">关注官方微信</div>
+	</div> 
+	
+	
+	<div class="head-bottom clearfix">
+		<a href="default.htm"><div class="logo">
+			<img src="images/zlan.svg" class="act-hide" alt="">
+			<img src="images/zlan2.svg" class="act-show" alt="">
+		</div></a>
+		<ul class="head-nav">
+			<li>
+				<a href="default.htm">首页</a>
+			</li>
+			<li>
+				<a href="about_zorlan.htm">关于卓岚</a>
+				<ul class="nav-down">
+					<a href="about_zorlan.htm"><li>公司简介</li></a>
+					<a href="about_development.htm"><li>发展历程</li></a>
+					<a href="about_certificate.htm"><li>公司证书</li></a>
+					<a href="news.htm"><li>企业动态</li></a>
+				</ul>
+			</li>
+			<li>
+				<a href=" products.htm">产品中心</a>
+				<div class="nav-down">
+					<ul class="cp-down clearfix">
+						<li>
+							<a href="products_netcom.htm"><p class="img"><img src="images/nav_01.png" alt=""></p><p class="p1">单串口服务器</p></a>
+							<a href="products_modbus.htm"><p class="img"><img src="images/nav_06.png" alt=""></p><p class="p1">Modbus网关</p></a>
+						</li>
+						<li>
+							<a href="products_netcom.htm?#type5"><p class="img"><img src="images/nav_02.png" alt="多串口服务器"></p><p class="p1">多串口服务器</p></a>
+							<a href="products_wifi.htm"><p class="img"><img src="images/nav_07.png" alt=""></p><p class="p1">WiFi产品</p></a>
+						</li>
+						<li>
+							<a href="products_chip.htm"><p class="img"><img src="images/nav_03.png" alt=""></p><p class="p1">物联网芯片</p></a>
+							<a href="products_4G_DTU.htm"><p class="img"><img src="images/nav_08.png" alt=""></p><p class="p1">4G 产品</p></a>
+						</li>
+						<li>
+							<a href="products_remote_io.htm"><p class="img"><img src="images/nav_04.png" alt=""></p><p class="p1">远程IO控制器</p></a>
+							<a href="products_lora.htm"><p class="img"><img src="images/nav_09.png" alt=""></p><p class="p1">LoRa产品</p></a>
+						</li>
+						<li>
+							<a href="products_core_module.htm"><p class="img"><img src="images/nav_05.png" alt=""></p><p class="p1">以太网核心模块</p></a>
+							<a href="products_fiber.htm"><p class="img"><img src="images/nav_10.png" alt=""></p><p class="p1">光纤产品</p></a>
+						</li>
+					</ul>
+				</div>
+			</li>
+			<li>
+				<a href="solutions.htm">解决方案</a>
+				<div class="nav-down">
+					<ul class="cp-down">
+						<li>
+							<a href="solutions.htm"><p class="img"><img src="images/PLC.svg" alt=""></p><p class="p1">PLC联网</p></a>
+							<a href="solutions.htm"><p class="img"><img src="images/gongyouyun.svg" alt=""></p><p class="p1">公有云连接方案</p></a>
+						</li>
+						<li>
+							<a href="solutions.htm"><p class="img"><img src="images/zhihuidianli.svg" alt=""></p><p class="p1">智慧电力</p></a>
+							<a href="solutions.htm"><p class="img"><img src="images/nongye03.svg" alt=""></p><p class="p1">智慧农业</p></a>
+						</li>
+						<li>
+							<a href="solutions.htm"><p class="img"><img src="images/wulianwang.svg" alt=""></p><p class="p1">工业物联网</p></a>
+							<a href="solutions.htm"><p class="img"><img src="images/shouji.svg" alt=""></p><p class="p1">手机与物联网</p></a>
+						</li>
+						<li>
+							<a href="solutions.htm"><p class="img"><img src="images/chengshi.svg" alt=""></p><p class="p1">智慧城市</p></a>
+							<a href="solutions.htm"><p class="img"><img src="images/huanbao2.svg" alt=""></p><p class="p1">智慧环保</p></a>
+						</li>
+						<li>
+							<a href="solutions.htm"><p class="img"><img src="images/nengyuan03.svg" alt=""></p><p class="p1">智慧能源</p></a>
+							<a href="solutions.htm"><p class="img"><img src="images/huandong.svg" alt=""></p><p class="p1">环动监控</p></a>
+						</li>
+					</ul>
+				</div>
+			</li>
+			<li>
+				<a href="document.htm">技术支持</a>
+				<ul class="nav-down">
+					<a href="download.htm"><li>资料下载</li></a>
+					<a href="document.htm"><li>文档中心</li></a>
+					<a href="video.htm"><li>视频中心</li></a>
+					<a href="type_search.htm"><li>型号搜索</li></a>
+				</ul>
+			</li>
+			<li><a href="contatct_us.htm">联系我们</a></li>
+			<li><a href="type_search.htm"><i class="fa fa-search"></i> 搜索</a></li>
+		</ul>
+		<a href="http://www.zlan-iot.com/"><p class="language">EN</p></a>
+	</div>
+</header>
+<!-- pad phone版头部 -->
+<header class="header2  clearfix">
+	<div class="logo">
+		<a href="default.htm">
+			<img src="images/zlan2.svg"></a>
+	</div>
+	<div class="phlanguage">
+		<a href="http://www.zlan-iot.com/">EN.</a>
+	</div>
+	<div class="menuph clearfix" id="menuph">
+		<div class="point" id="mbtn">
+			<span class="navbtn"></span>
+		</div>
+	</div>
+</header>
+<!--手机版下拉-->
+<div class="d-menu-ul">
+	<div class="d-xialaph">
+		<ul class="d-ul1">
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						<a href="default.htm">首页</a>
+					</h4>
+				</div>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						关于卓岚
+						<img class="img_s" src="images/SJ_xiala_jia.png">
+						<img class="img_d" src="images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<!-- 二级 -->
+				<ul class="d-ul2">
+					<div class="containere">
+						<li><a href="about_zorlan.htm"><h5>公司简介</h5></a></li>
+						<li><a href="about_development.htm"><h5>发展历程</h5></a></li>
+						<li><a href="about_certificate.htm"><h5>公司证书</h5></a></li>
+						<li><a href="news.htm"><h5>企业动态</h5></a></li>
+					</div>
+				</ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						<!--产品中心-->
+						产品中心
+						<img class="img_s" src="images/SJ_xiala_jia.png">
+						<img class="img_d" src="images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<!-- 二级 -->
+				<ul class="d-ul2">
+					<li>
+						<div class="containere">
+							<a href="products_netcom.htm"><h5>单串口服务器</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="serialserver.htm"><h5>多串口服务器</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="products_chip.htm"><h5>物联网芯片</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="products_p2p.htm"><h5>P2P联网产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="products_core_module.htm"><h5>串口以太网核心模块</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="products_serial_server.htm"><h5>以太网串口模块</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="products_wifi.htm"><h5>WiFi产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="products_4G_DTU.htm"><h5>4G 产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="#"><h5>Zigbee/RF产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="products_fiber.htm"><h5>光纤产品</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="products_modbus.htm"><h5>Modbus网关</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="products_remote_io.htm"><h5>远程IO控制器</h5></a>
+						</div>
+					</li>
+					<li>
+						<div class="containere">
+							<a href="products_converter.htm"><h5>接口转换器</h5></a>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					
+					<h4>
+						解决方案
+						 <img class="img_s" src="images/SJ_xiala_jia.png">
+                         <img class="img_d" src="images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<ul class="d-ul2">
+                     <div class="containere">
+                         <li><a href="solutions.htm"><h5>公有云连接方案</h5></a></li>
+                         <li><a href="solutions.htm"><h5>智慧电力</h5></a></li>
+                         <li><a href="solutions.htm"><h5>工业物联网</h5></a></li>
+                         <li><a href="solutions.htm"><h5>智慧城市</h5></a></li>
+						 <li><a href="solutions.htm"><h5>智慧能源</h5></a></li>
+						 <li><a href="solutions.htm"><h5>PLC联网</h5></a></li>
+						 <li><a href="solutions.htm"><h5>智慧农业</h5></a></li>
+						 <li><a href="solutions.htm"><h5>手机与物联网</h5></a></li>
+						 <li><a href="solutions.htm"><h5>智慧环保</h5></a></li>
+						 <li><a href="solutions.htm"><h5>环动监控</h5></a></li>
+                     </div>
+                </ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<h4>
+						技术支持
+						<img class="img_s" src="images/SJ_xiala_jia.png">
+						<img class="img_d" src="images/SJ_xiala_jian.png">
+					</h4>
+				</div>
+				<!-- 二级 -->
+				<ul class="d-ul2">
+					<div class="containere">
+						<li><a href="download.htm"><h5>资料下载</h5></a></li>
+						<li><a href="document.htm"><h5>文档中心</h5></a></li>
+					</div>
+				</ul>
+			</li>
+			<!--   一级  -->
+			<li class="clearfix">
+				<div class="containerr">
+					<a href="contatct_us.htm">
+						<h4>
+						联系我们
+						</h4>
+					</a>
+				</div>
+			</li>
+		</ul>
+	</div>
+</div>
+<div class="phonemeng"></div>
+<!-- banner -->
+<section class="ny-banner">
+    <img src="images/PIC02.png" class="phone-hide" alt="">
+    <img src="images/banner1.jpg" class="phone-show" alt="">
+</section>
+<!-- 内容 -->
+<section class="b1-container clearfix">
+<!--左侧导航版块--><div id="page1"> </div>
+	<script>
+  		 $("#page1").load("include.html");
+	</script><!--左侧导航版块-->
+	<!--右侧产品内页-->
+    <div class="right">
+        <div class="con">
+            <div class="b3-h1 clearfix">
+                <p class="tu"><img src="images/cpp2.svg" alt=""></p>
+                <p class="h1">多功能串口转WIFI模块</p>
+            </div>
+            <div class="b3-chanpin clearfix">
+                <div class="suolvetu clearfix">
+                    <div class="right">
+                        <div class="inzoom"><img src="images/ZLSN7046_02.png" rel="images/ZLSN7046_02.png" class="jqzoom" alt=""></div>
+                    </div>
+                    <ul class="left1" id="thumblist">
+                        <li class="tb-selected"><img src="images/ZLSN7046_01.png" mid="images/ZLSN7046_02.png" big="images/ZLSN7046_03.png" alt=""></li>
+                        <li><img src="images/ZLSN7046_04.png" mid="images/ZLSN7046_05.png" big="images/ZLSN7046_06.png" alt=""></li>
+                        <li><img src="images/ZLSN7046_07.png" mid="images/ZLSN7046_08.png" big="images/ZLSN7046_09.png" alt=""></li>
+                        <li><img src="images/ZLSN7046_10.png" mid="images/ZLSN7046_11.png" big="images/ZLSN7046_12.png" alt=""></li>
+                    </ul>
+                </div>
+                <!-- 手机显示 -->
+                <div class="b3cp-left">
+                    <div class="img1 clearfix">
+                        <div class="item">
+                            <img src="images/ZLSN7046_02.png" alt=""  data-n="1">
+                        </div>
+                        <div class="item">
+                            <img src="images/ZLSN7046_05.png" alt=""  data-n="2">
+                        </div>
+                        <div class="item">
+                            <img src="images/ZLSN7046_08.png" alt=""  data-n="3">
+                        </div>
+                        <div class="item">
+                            <img src="images/ZLSN7046_11.png" alt=""  data-n="4">
+                        </div>
+                    </div>
+                    <div class="img2 clearfix">
+                        <p id="shang">
+                            <img class="fangan-prev" src="images/jian1.png"/>
+                        </p>
+                        <div class="img-n">
+                            <div class="n"  data-num="0">
+                                <img src="images/ZLSN7046_02.png" alt="">
+                            </div>
+                            <div class="n"  data-num="1">
+                                <img src="images/ZLSN7046_05.png" alt="">
+                            </div>
+                            <div class="n"  data-num="2">
+                                <img src="images/ZLSN7046_08.png" alt="">
+                            </div>
+                            <div class="n"  data-num="3">
+                                <img src="images/ZLSN7046_11.png" alt="">
+                            </div>
+                        </div>
+                        <p id="xia">
+                            <img class="fangan-prev" src="images/jian.png"/>
+                        </p>
+                    </div>
+                </div>
+
+
+                <div class="biaoshu">
+                    <p class="h2">ZLSN7046</p>
+                    <p class="jianjie">多功能串口转WIFI模块</p>
+                    <ul class="list">
+                        <li>支持模块之间的wifi对连</li>
+                        <li>支持DNS解析，支持作为DHCP Client</li>
+                        <li>支持TCPServer、TCP Client、UDP、UDP组播</li>
+                        <li>支持设备连接上发送MAC地址功能</li>
+                        <li>支持Modbus网关功能</li>
+                        <li>支持多主机功能</li>
+                        <li>支持自定义心跳包和注册包功能</li>
+                    </ul>  <div class="button clearfix">
+                        <a href="contatct_us.htm"><p class="liax"><i class="fa fa-phone fa-lg"></i><span>联系我们</span></p></a>
+						<a><p class="xiaz"><i class="fa fa-download fa-lg"></i><span>下载资料</span></p></a>
+                        <a href="https://detail.tmall.com/item.htm?spm=a212k0.12153887.0.0.4bde687dQpZ3yI&id=594153999687"><p class="wd"><i class="fa fa-shopping-cart fa-lg"></i><span>在线购买</span></p></a>
+                    </div>
+                </div>
+            </div>
+            <ul class="b3tab clearfix">
+                <li class="act">产品简介</li>
+                <li>规格参数</li>
+                <li>产品资料</li>
+            </ul>
+            <!--  产品简介 -->
+
+                <div class="b3li actvie">
+                    <!-- 特点 -->
+                    <div class="ted">
+                        <p class="p1"><img src="images/B16_03.jpg" alt=""><span>概述</span></p>
+                        <div class="p2">
+                            <p>ZLSN7046是上海卓岚推出的一款和ZLSN7044 pin到pin兼容的wifi转串口模块。它能够将wifi信号转化为串口信号，且支持多种功能，采用外置天线。7046支持一个UART TTL电平串口转WIFI，可以作为STA或者AP方式。支持921.6Kbps的高波特率。7046并不是一款简单的串口转wifi模块，它具有Modbus TCP、自定义注册报、自定义协议转化等多种高级功能，非常适合于物联网应用。</p>
+                            <p>和ZLAN7044相比7046不含有以太网接口，只有wifi接口，但是7046的功耗更低，全速工作95mA。7046的高级功能包括：支持Modbus转RTU、支持多主机同时访问而不冲突、支持自定义心跳包和注册包功能、支持MQTT、支持http方式的数据提交和下发功能、支持TCP服务器客户端共存。支持使用zlvircom工具跨网段搜索设备，支持远程升级和网页自定义下载。支持二进制格式的类AT指令，无需切换为AT配置模式。ZLSN7046N支持P2P通讯方式。</p>
+                            <p>硬件上7046采用了新的WIFI芯片组，采用ARM M4内核，主频192MHz，采用实时操作系统。其中ZLSN7046-5支持连接5.8G的WIFI热点。wifi模式支持802.11b/g/n，支持WEP64/128, TKIP, AES, WPA, WPA2, WAPI加密模式。7046和计算机连接上同一个AP时，计算机和模块可以互相连通。7046满足ROSH要求。</p>
+                            <p>7046供电电压为3.3V，具有丰富的外部功能引脚，包括485发送控制脚、运行指示灯、数据活动指示灯、TCP连接指示灯、wifi工作模块指示灯、wifi连接指示灯等。</p>
+                        </div>
+                    </div>
+                    <!-- 特点 -->
+                    <div class="ted">
+                        <p class="p1"><img src="images/B16_03.jpg" alt=""><span>特点</span></p>
+                        <ul>
+							<li>支持802.11b/g/n。</li>
+							<li>支持硬件流控CTS/RTS和软件流控XON/XOFF。</li>
+							<li>支持在系统通过网口升级程序。</li>
+							<li>支持模块之间的wifi对连。</li>
+							<li>一键搜索配置。</li>
+							<li>支持DNS解析，支持作为DHCP Client，作为AP模式时也可以作为DHCP Server。</li>
+							<li>支持TCPServer、TCP Client、UDP、UDP组播。作为Server时支持多达30个TCP连接同时和联网模块通信；作为Client时可以连接到7个目的IP。</li>
+							<li>支持设备连接上发送MAC地址功能，方便云端管理设备。</li>
+							<li>支持远程通过软件查看设备的TCP连接状态、串口数据发送、接收状态。虚拟串口支持数据监视功能。</li>
+							<li>支持Modbus网关功能，支持Modbus RTU转Modbus TCP。可以支持存储型的Modbus，可以自动采集设备数据，并存储起来；也支持非存储模式的Modbus网关。</li>
+							<li>支持多主机功能：在一问一答的查询方式下，支持网口端允许有多台计算机同时访问同一个串口设备。</li>
+							<li>支持自定义心跳包和注册包功能：可以方便和云端进行通信和设备识别。</li>
+							<li>支持TCP建立连接需要密码验证的功能，保证连接安全性。</li>
+							<li>支持http方式的数据提交和下发功能，云端可以直接使用http的GET指令和设备的串口数据进行交互。</li>
+                        </ul>
+                    </div>
+                </div>
+                <!--  规格参数 -->
+                <div class="b3li">
+                <div class="ted">
+					<p class="p1"><img src="images/B16_03.jpg" alt=""><span>产品规格</span></p>
+				</div>
+				
+				<div class="spec">
+					  <p class="odd">外形</p> 
+					  <ul>
+					   <li class="left2">接口</li> 
+					   <li>23针的双针排列</li> 
+					  </ul> 
+				      <ul>
+					   <li class="left2">尺寸</li> 
+					   <li>43.5mm×31.0mm</li> 
+					  </ul> 
+					  <p class="odd">串口参数</p> 
+					  <ul>
+					   <li class="left2">电气</li> 
+					   <li>TTL×1：RXD，TXD，GND，接口电平3.3V</li> 
+					  </ul> 
+					  <ul>
+					   <li class="left2">波特率</li> 
+					   <li>300~921.6Kbps（不支持600bps、选择76800bps时为921.6Kbps）</li> 
+					  </ul> 
+					  <ul>
+					   <li class="left2">校验位</li> 
+					   <li>None, Odd, Even, Mark, Space</li> 
+					  </ul> 
+					  <ul>
+					   <li class="left2">数据位</li> 
+					   <li>5～9</li> 
+					  </ul> 
+					  <ul>
+					   <li class="left2">流控</li> 
+					   <li>RTS/CTS，DSR/DTR，XON/XOFF，NONE</li> 
+					  </ul> 
+					
+					  <p class="odd">无线</p> 
+					  <ul>
+					   <li class="left2">无线标准</li> 
+					   <li>802.11 b/g/n</li> 
+					  </ul>
+					  <ul>
+					   <li class="left2">频率范围</li> 
+					   <li>2.412GHz-2.484GHz</li> 
+					  </ul>
+					  <ul>
+					   <li class="left2">发射功率</li> 
+					   <li>IEEE 802.11n: 15dBm @HT20/40 MCS7;IEEE 802.11g: 16dBm @54MHz;IEEE 802.11b: 18dBm @11MHz</li> 
+					  </ul>
+					  <ul>
+					   <li class="left2">接收灵敏度</li> 
+					   <li>HT40 MCS7 : -70dBm@10% PER(MCS7);HT20 MCS7s : -73dBm@10% PER(MCS7);54M: -77dBm@10% PER;11M: -89dBm@ 8% PER</li> 
+					  </ul>
+					  <ul>
+					   <li class="left2">天线选择</li> 
+					   <li>外置IPEX</li> 
+					  </ul> 
+				      
+					  
+					  
+					  <p class="odd">软件特性</p> 
+					  <ul>
+					   <li class="left2">无线工作模式</li> 
+					   <li>STA/AP</li> 
+					  </ul>
+					  <ul>
+					   <li class="left2">安全机制</li> 
+					   <li>WPA/WPA2, WEP, TKIP and AES, WPS2.0, WAPI</li> 
+					  </ul> 
+					  <ul>
+					   <li class="left2">网络协议</li> 
+					   <li>TCP/UDP/ARP/ICMP/DHCP/DNS/HTTP</li> 
+					  </ul> 
+					  <ul>
+					   <li class="left2">通信方式</li> 
+					   <li>Socket、虚拟串口</li> 
+					  </ul> 
+				      <ul>
+					   <li class="left2">配置方式</li> 
+					   <li>Web服务器、Windows配置工具zlvircom</li> 
+					  </ul> 
+					   
+					  <p class="odd">硬件</p>
+				      <ul>
+					   <li class="left2">电源</li> 
+					   <li>3.3V</li> 
+					  </ul> 
+					  <ul>
+					   <li class="left2">功耗</li> 
+					   <li>全速工作：95mA</li> 
+					  </ul>
+					  <ul>
+					   <li class="left2">工作温度</li> 
+					   <li>-20~70℃</li> 
+					  </ul> 
+					  <ul>
+					   <li class="left2">储存温度</li> 
+					   <li>-45~125℃</li> 
+					  </ul> 
+					  
+					 </div>
+                </div>
+                <!--  产品资料 -->
+                <div class="b3li">
+                    <!-- 文档下载 -->
+                    <div class="ted">
+                        <p class="p1"><img src="images/B16_03.jpg" alt=""><span>文档下载</span></p>
+                        <ul class="b3wendang clearfix">
+                            <li>
+                                <div class="lef"><img src="images/doc7046.jpg" alt=""></div>
+                                <div class="righ">
+                                    <h4>ZLSN7046用户手册</h4>
+                                    <a href="download/ZLSN7046.pdf"><p class="down"><img src="images/29.png" alt=""><span>立即下载</span></p></a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- 相关文档 -->
+                    <div class="xiag">
+                        <p class="p1"><img src="images/B16_03.jpg" alt=""><span>相关文档</span></p>
+                        <ul>
+                            <a href="download/ZLSN7046.pdf"><li>ZLSN7046用户手册</li></a>
+                        </ul>
+                    </div>
+                </div>
+
+        </div>
+    </div>
+</section>
+<!-- 底部 -->
+<footer class="footer">
+	<div class="footer-main-area" data-background="images/footer-bg.png">
+		<div class="container">
+			<div class="row">
+				<div class="col-xl-4 col-lg-6 col-md-6">
+
+					<div class="widget footer-widget">
+						<img src="images/zlan2.svg" alt="" class="foot-logo">
+
+						<p class="text-light-gray summary mrb-40 mrt-10">上海卓岚信息科技有限公司是一家专业提供工业物联网解决方案，集研发、生产、销售为一体的集团公司。成立于2008年 。公司在采集设备定制、物联网通讯协议设计、物联网方案选型、工业物联网平台开发方面有核心优势，可以提供各类物联网定制项目。</p>
+						<form name="formsearch" method="get" action="type_search.htm">
+							<input type="search" class="search-input" name="value" size="24" value="请输入搜索内容..." onfocus="if(this.value=='请输入搜索内容...'){this.value='';}" onblur="if(this.value==''){this.value='请输入搜索内容...';}" id="inputString" onkeyup="lookup(this.value);" placeholder="搜索...">
+							<button type="submit" value="Search"><i class="fa fa-search"></i>&nbsp;搜索</button>
+						</form>
+					</div>
+				</div>
+				<div class="col-xl-2 col-lg-6 col-md-6">
+					<div class="widget footer-widget haha">
+						<h5 class="widget-title text-white mrb-30">快速链接</h5>
+						<ul class="footer-widget-list">
+							<li><a href="serialserver.htm">串口服务器</a></li>
+							<li><a href="IOT_gateway.htm">物联网网关</a></li>
+							<li><a href="products_chip.htm">物联网芯片</a></li>
+							<li><a href="products_ZLSN3007S.htm">超级网口</a></li>
+							<li><a href="485_ethernet.htm">485转以太网</a></li>
+							<li><a href="products_serial_server.htm">以太网串口模块</a></li>
+							<li><a href="products_wifi.htm">串口WIFI模块</a></li>
+							<li><a href="products_ZLAN9163.htm">485光端机</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-xl-2 col-lg-6 col-md-6">
+					<div class="widget footer-widget haha">
+						<h5 class="widget-title text-white mrb-30">&nbsp;</h5>
+						<ul class="footer-widget-list">
+							<li><a href="products_4G_DTU.htm">4G DTU</a></li>
+							<li><a href="products_4G_DTU.htm">4G路由器</a></li>
+							<li><a href="products_lora.htm">LoRa</a></li>
+							<li><a href="#">Zigbee</a></li>
+							<li><a href="products_modbus.htm">Modbus网关</a></li>
+							<li><a href="products_remote_io.htm">远程IO控制器</a></li>
+							<li><a href="products_converter.htm">串口转换器</a></li>
+							<li><a href="products_fiber.htm">光纤收发器</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-xl-4 col-lg-6 col-md-6">
+					<div class="widget footer-widget haha">
+						<h5 class="widget-title text-white mrb-30">联系我们</h5>
+						<address class="mrb-25">
+							<div class="mrb-10"><a href="tel:400-601-5103" class="text-phone">400-601-5103</a></div>
+							<div class="mrb-10"><i class="fa fa-phone mrr-10"></i><a href="tel:021-6432-5189" class="text-phone2">电话：021-6432-5189</a></div>
+							<div class="mrb-10"><i class="fa fa-phone mrr-10"></i><a href="tel:189-3009-4219" class="text-phone2">下班后应急电话：18930094219</a></div>
+							<div class="mrb-10"><i class="fa fa-envelope mrr-10"></i>产品咨询：sales@zlmcu.com</div>
+							<div class="mrb-10"><i class="fa fa-comments mrr-10"></i>技术支持：support@zlmcu.com</div>
+							<div><i class="fa fa-location-arrow mrr-10"></i>上海市闵行区园文路28号世宏金源2001室</div>
+						</address><ul class="social-list">
+							<li class="three"><a class="taobao" href="https://zlan.tmall.com/" target="_blank"><img src="images/tianmao.png" alt=""></a></li>
+							<li class="four"><a class="jd" href="http://zlaniot.jd.com" target="_blank"><img src="images/jd.svg" alt=""></a></li>
+							<li class="one"><a href="javascript:" id="contact_weixin" onclick="openWindow(this)"><i class="fa fa-weixin"></i></a></li>
+							<li class="two"><a href="javascript:" id="contact_skype" onclick="openWindow(this)"><i class="fa fa-skype"></i></a></li>
+							
+						</ul>
+					</div>
+				</div>
+				<div id="light_weixin" class="white_content"><img src="images/QRcode.jpg" alt=""/></div>
+				<div id="light_skype" class="white_content"><img src="images/QRcode.jpg" alt=""/></div>
+				<div id="fade" class="black_overlay"  onClick="closeWindow()"></div>
+
+			</div>
+		</div>
+	</div>
+	<div class="footer-bottom-area">
+		<div class="container">
+			<div class="row">
+				<div class="col-xl-6">
+					<span class="text-silver">版权所有@上海卓岚信息科技有限公司 | <a href="http://beian.miit.gov.cn/">沪ICP备11004689号-1</a><script src="https://s121.cnzz.com/stat.php?id=1204382&web_id=1204382&show=pic" language="JavaScript" charset="gb2312"></script></span>
+				</div>
+				<div class="col-xl-6">
+					<span class="text-silver"><a href="about_zorlan.htm">关于我们</a>&nbsp;&nbsp;&nbsp;<a href=" products.htm">产品中心</a>&nbsp;&nbsp;&nbsp;<a href="solutions.htm">解决方案</a>&nbsp;&nbsp;&nbsp;<a href="download.htm">资料下载</a>&nbsp;&nbsp;&nbsp;<a href="document1.htm">文档中心</a></span>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</footer>
+
+<!-- totop -->
+<div class="totop1">
+	<p id="toTop"><img src="images/aa.png" alt=""></p>
+</div>
+
+
+
+<script src="js/jquery-1.12.4.min.js"></script>
+<script src="js/slick.min.js"></script>
+<script src="js/jquery.imagezoom.js"></script>
+<script src="js/common.js"></script>
+<script type="text/javascript">
+    $(function () {
+       
+    //图片放大
+        $(document).ready(function(){
+            $(".jqzoom").imagezoom();
+            $("#thumblist li").hover(function(){
+                //增加点击的li的class:tb-selected，去掉其他的tb-selecte
+                $(this).addClass("tb-selected").siblings().removeClass("tb-selected");
+                //赋值属性
+                $(".jqzoom").attr('src',$(this).find("img").attr("mid"));
+                $(".jqzoom").attr('rel',$(this).find("img").attr("big"));
+            });
+        });
+
+        //选项卡
+		//hover 鼠标滑过 click鼠标点击
+        $('.b3tab li').click(function () {
+            $(this).addClass("act").siblings().removeClass("act");
+            var num1=$(this).index();
+            console.log(num1);
+            $('.b1-container .right .con .b3li').eq(num1).siblings().removeClass("actvie");
+            $('.b1-container .right .con .b3li').eq(num1).addClass("actvie");
+        })
+		$('.xiaz').click(function () {
+            $('.b3tab li:nth-child(3)').addClass("act").siblings().removeClass("act");
+            $('.b1-container .right .con .b3li').eq(2).siblings().removeClass("actvie");
+            $('.b1-container .right .con .b3li').eq(2).addClass("actvie");
+        })
+
+
+        //手机显示产品
+        if($(window).width() <= 990){
+            $(".b3cp-left .img1").slick({
+                dots: false,
+                arrows: true,
+                infinite: true,
+                autoplay: false,
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                asNavFor: '.img-n'
+				
+            });
+        }
+
+        if($(window).width() <= 990 && $(window).width() > 600){
+            $('.b3cp-left .img-n').slick({
+                asNavFor: '.img1',
+                slidesToShow: 4,
+                slidesToScroll: 1,
+                autoplay: false,
+                dots: false,
+                centerMode: false,
+                arrows: true
+            });
+        }else if($(window).width() <= 600 && $(window).width() > 500){
+            $('.b3cp-left .img-n').slick({
+                asNavFor: '.img1',
+                slidesToShow: 4,
+                slidesToScroll: 1,
+                autoplay: false,
+                dots: false,
+                centerMode: false,
+                arrows: true
+            });
+        } else if($(window).width() <= 500 && $(window).width() > 400){
+            $('.b3cp-left .img-n').slick({
+                asNavFor: '.img1',
+                slidesToShow: 3,
+                slidesToScroll: 1,
+                autoplay: false,
+                dots: false,
+                centerMode: false,
+                arrows: true
+            });
+           /* $('.b3cp-left .img-n').slick('afterChange', function(event, slick, direction){
+                $('.b3cp-left .img2 .img-n').css("border-left","none");
+            });*/
+        }else if($(window).width() <= 400 ){
+            $('.b3cp-left .img-n').slick({
+                asNavFor: '.img1',
+                slidesToShow: 2,
+                slidesToScroll: 1,
+                autoplay: false,
+                dots: false,
+                centerMode: false,
+                arrows: true
+            });
+        }
+
+        var n=0;
+        $(".b3cp-left .img-n .n[data-num='0']").addClass("active-prodbanner-btna");
+        $('.b3cp-left .img-n .n').click(function(){
+            var $data = $(this).attr("data-num");
+            n=$data;
+            $('.b3cp-left .img1').slick("slickGoTo",$data);
+            $('.b3cp-left .img-n .n').removeClass("active-prodbanner-btna");
+            $('.cp-left .img-n .n[data-num="'+$data+'"]').addClass("active-prodbanner-btna");
+
+        });
+        $('.b3cp-left #shang').click(function(){
+            if(n<1){
+                n=$('.b3cp-left .img1 .item').length-1;
+            }else{
+                n--;
+            }
+            $('.b3cp-left .img-n .n').removeClass("active-prodbanner-btna");
+            $('.b3cp-left .img-n .n[data-num="'+n+'"]').addClass("active-prodbanner-btna");
+            $('.b3cp-left .img1').slick("prev");
+        });
+
+        $('.b3cp-left #xia').click(function(){
+            if(n>$('.b3cp-left .img1 .item').length-2){
+                n=0;
+            }else{
+                n++;
+            }
+            $('.b3cp-left .img-n .n').removeClass("active-prodbanner-btna");
+            $('.b3cp-left .img-n .n[data-num="'+n+'"]').addClass("active-prodbanner-btna");
+            $('.b3cp-left .img1').slick("next");
+        });
+		
+		
+
+    })
+</script>
+
+
+<script  type="text/javascript">
+function openWindow(obj){
+	switch(obj.id)
+	{
+		case 'contact_weixin':
+		skype_or_weixin = "light_weixin";
+		break;
+
+		case 'contact_skype':
+		skype_or_weixin = "light_skype";
+		break;
+	}
+	document.getElementById(skype_or_weixin).style.display='block';
+	document.getElementById('fade').style.display='block';
+}
+function closeWindow(){
+	document.getElementById('light_weixin').style.display='none';
+	document.getElementById('light_skype').style.display='none';
+	document.getElementById('fade').style.display='none';
+}
+</script>
+	
+</body>
+</html>

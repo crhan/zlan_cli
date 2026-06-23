@@ -91,6 +91,11 @@ func (p *Param) format(f Field) string {
 		return fmt.Sprintf("0x%02x", b[0])
 	case KindRaw, KindOpaque:
 		return hex.EncodeToString(b)
+	case KindStopBits:
+		if b[0]&0x01 != 0 {
+			return "2"
+		}
+		return "1"
 	}
 	return hex.EncodeToString(b)
 }
@@ -162,6 +167,15 @@ func (p *Param) parseInto(f Field, value string) error {
 		copy(dst[:len(raw)], raw)
 	case KindOpaque:
 		return fmt.Errorf("%s 为保留区,不支持直接设置", f.Name)
+	case KindStopBits:
+		switch strings.TrimSpace(value) {
+		case "1":
+			dst[0] &^= 0x01
+		case "2":
+			dst[0] |= 0x01
+		default:
+			return fmt.Errorf("%s:需为 1 或 2 个停止位,得到 %q", f.Name, value)
+		}
 	default:
 		return fmt.Errorf("%s:该字段类型不支持设置", f.Name)
 	}

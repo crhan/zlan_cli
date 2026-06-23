@@ -6,16 +6,17 @@ import "sort"
 type Kind uint8
 
 const (
-	KindIPv4    Kind = iota // 4 字节大端 IP
-	KindU8                  // 单字节无符号整数
-	KindU16BE               // 2 字节大端无符号整数
-	KindEnum                // 单字节枚举(查表,见 Field.Enum)
-	KindCString             // 以 0 结尾的可见字符串(定长区,写时补 0 清尾)
-	KindMAC                 // 6 字节 MAC(冒号分隔展示)
-	KindVersion             // 单字节版本(展示为 1.(383+v))
-	KindBitByte             // 位域容器字节(展示为 hex,位含义见 BitField)
-	KindRaw                 // 定长原始字节(hex 展示/解析,如 key)
-	KindOpaque              // 纯透传保留区,不解析、禁止直接设置
+	KindIPv4     Kind = iota // 4 字节大端 IP
+	KindU8                   // 单字节无符号整数
+	KindU16BE                // 2 字节大端无符号整数
+	KindEnum                 // 单字节枚举(查表,见 Field.Enum)
+	KindCString              // 以 0 结尾的可见字符串(定长区,写时补 0 清尾)
+	KindMAC                  // 6 字节 MAC(冒号分隔展示)
+	KindVersion              // 单字节版本(展示为 1.(383+v))
+	KindBitByte              // 位域容器字节(展示为 hex,位含义见 BitField)
+	KindRaw                  // 定长原始字节(hex 展示/解析,如 key)
+	KindOpaque               // 纯透传保留区,不解析、禁止直接设置
+	KindStopBits             // OtherBits bit0:0=1 stop bit,1=2 stop bits;写入保留其它位
 )
 
 // Field 是参数块里一个字段的注册项。get/set/info/json 全部由此表派生。
@@ -88,7 +89,7 @@ var (
 		0: "8", 1: "7", 2: "6", 3: "5",
 	})
 	enumDHCP     = newEnum(map[byte]string{0: "static", 1: "dhcp"})
-	enumFlow     = newEnum(map[byte]string{0: "none", 1: "cts-rts"})
+	enumFlow     = newEnum(map[byte]string{0: "none", 1: "cts-rts", 2: "dsr-dtr", 3: "xon-xoff"})
 	enumDestMode = newEnum(map[byte]string{0: "static", 1: "dynamic"})
 	enumAppProto = newEnum(map[byte]string{0: "transparent", 1: "modbus", 2: "realcom"})
 )
@@ -111,8 +112,10 @@ var fields = []Field{
 	{Name: "packing_len", Offset: 50, Size: 2, Kind: KindU16BE, Group: "serial", Desc: "打包长度(1..1400)"},
 	{Name: "f_end_en", Offset: 52, Size: 1, Kind: KindU8, Group: "deprecated", Desc: "帧尾有效位(V1.472 起失效)"},
 	{Name: "f_end_byte", Offset: 53, Size: 1, Kind: KindU8, Group: "deprecated", Desc: "帧尾字符(失效)"},
-	{Name: "f_start_en", Offset: 54, Size: 1, Kind: KindU8, Group: "deprecated", Desc: "帧首有效位(失效)"},
-	{Name: "f_start_byte", Offset: 55, Size: 1, Kind: KindU8, Group: "deprecated", Desc: "帧首字符(失效)"},
+	{Name: "f_start_en", Offset: 54, Size: 1, Kind: KindU8, Group: "deprecated", Desc: "旧帧首有效位;Rev.4/DLL 用作 485 半双工等待"},
+	{Name: "f_start_byte", Offset: 55, Size: 1, Kind: KindU8, Group: "deprecated", Desc: "旧帧首字符;Rev.4/DLL 用作 485 等待最长时间"},
+	{Name: "rs485_half_gap", Offset: 54, Size: 1, Kind: KindU8, Group: "serial", Desc: "485 半双工等待时间(PARAM_485_GAP)"},
+	{Name: "rs485_timeout", Offset: 55, Size: 1, Kind: KindU8, Group: "serial", Desc: "485 等待最长时间(PARAM_485_TIME_OUT)"},
 	{Name: "dhcp_en", Offset: 56, Size: 1, Kind: KindEnum, Enum: enumDHCP, Group: "network", Desc: "IP 模式(静态/DHCP)"},
 	{Name: "flow_ctrl", Offset: 57, Size: 1, Kind: KindEnum, Enum: enumFlow, Group: "serial", Desc: "流控方式"},
 	{Name: "dest_mode", Offset: 58, Size: 1, Kind: KindEnum, Enum: enumDestMode, Group: "behavior", Desc: "目的模式(静态/动态)"},
@@ -135,6 +138,8 @@ var fields = []Field{
 	{Name: "func_en", Offset: 110, Size: 1, Kind: KindBitByte, Group: "advanced", Desc: "功能使能位"},
 	{Name: "sm_param_t", Offset: 111, Size: 1, Kind: KindU8, Group: "advanced", Desc: "中心服务器发参间隔(分钟)"},
 	{Name: "func_sel2", Offset: 112, Size: 1, Kind: KindBitByte, ReadOnly: true, Group: "identity", Desc: "高级功能位(只读)"},
+	{Name: "multi_host_wait", Offset: 113, Size: 1, Kind: KindU8, Group: "serial", Desc: "485 多主机 maxwait(0=关闭,1=25ms,2=50ms)"},
+	{Name: "stop_bits", Offset: 114, Size: 1, Kind: KindStopBits, Group: "serial", Desc: "停止位(OtherBits bit0:1 或 2)"},
 	{Name: "reserve", Offset: 113, Size: 2, Kind: KindOpaque, Group: "advanced", Desc: "保留"},
 	{Name: "user_param", Offset: 115, Size: 52, Kind: KindOpaque, Group: "advanced", Desc: "用户参数区(注册包/心跳包等)"},
 }
@@ -156,10 +161,19 @@ var bitFields = []BitField{
 	{Name: "func_en.report_to_server", Parent: "func_en", Byte: 110, Bit: 1, Desc: "向中心服务器发送模块参数"},
 	{Name: "func_en.need_password", Parent: "func_en", Byte: 110, Bit: 2, Desc: "修改参数需密码"},
 	{Name: "func_en.udp_recv_broadcast", Parent: "func_en", Byte: 110, Bit: 3, Desc: "UDP 进制接收广播包"},
+	{Name: "func_en.p2p", Parent: "func_en", Byte: 110, Bit: 4, Desc: "P2P 功能"},
+	{Name: "func_en.send_mac_on_connect", Parent: "func_en", Byte: 110, Bit: 5, Desc: "连接上发送 MAC"},
+	{Name: "func_en.ping_disconnect_detect", Parent: "func_en", Byte: 110, Bit: 6, Desc: "ping 检测断网"},
+	{Name: "func_en.keep_buffer_on_connect", Parent: "func_en", Byte: 110, Bit: 7, Desc: "连接上时不清空缓存"},
 
 	{Name: "func_sel2.io_config", Parent: "func_sel2", Byte: 112, Bit: 0, ReadOnly: true, Desc: "支持 IO 配置"},
 	{Name: "func_sel2.udp_multicast", Parent: "func_sel2", Byte: 112, Bit: 1, ReadOnly: true, Desc: "支持 UDP 组播"},
 	{Name: "func_sel2.multi_target_ip", Parent: "func_sel2", Byte: 112, Bit: 2, ReadOnly: true, Desc: "支持多目标 IP"},
+	{Name: "func_sel2.proxy_server", Parent: "func_sel2", Byte: 112, Bit: 3, ReadOnly: true, Desc: "支持代理服务器"},
+	{Name: "func_sel2.snmp", Parent: "func_sel2", Byte: 112, Bit: 4, ReadOnly: true, Desc: "支持 SNMP"},
+	{Name: "func_sel2.p2p", Parent: "func_sel2", Byte: 112, Bit: 5, ReadOnly: true, Desc: "支持 P2P"},
+
+	{Name: "stop_bits.two", Parent: "stop_bits", Byte: 114, Bit: 0, Desc: "2 个停止位"},
 }
 
 var (
@@ -205,7 +219,13 @@ func BitFields() []BitField {
 // FieldOptions 返回枚举字段的可选值名(按取值排序);非枚举字段返回 nil。
 func FieldOptions(name string) []string {
 	f, ok := fieldIndex[name]
-	if !ok || f.Kind != KindEnum || f.Enum == nil {
+	if !ok {
+		return nil
+	}
+	if f.Kind == KindStopBits {
+		return []string{"1", "2"}
+	}
+	if f.Kind != KindEnum || f.Enum == nil {
 		return nil
 	}
 	return f.Enum.options()
