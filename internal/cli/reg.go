@@ -35,7 +35,7 @@ func newRegCmd(g *globalFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "reg",
 		Aliases: []string{"regs", "register", "modbus", "mb"},
-		Short:   "通过 ZLAN 数据通道读写 Modbus 寄存器",
+		Short:   "通过 ZLAN 数据通道读写 Modbus 数据点",
 		Long: `通过指定 ZLAN 设备的当前参数自动选择寄存器访问方式:
 - app_proto=modbus:使用 Modbus TCP
 - app_proto=transparent:使用 Modbus RTU 帧透传到 TCP 数据通道
@@ -55,15 +55,16 @@ func newRegCmd(g *globalFlags) *cobra.Command {
 func newRegReadCmd(g *globalFlags, opt *regOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "read <target> <addr> [count]",
-		Short: "读取 Modbus 寄存器",
+		Short: "读取 Modbus 寄存器、线圈或离散输入",
 		Example: `  zlan reg read 192.168.15.42 0x0001 2 --unit 11
-  zlan reg read 192.168.15.42 0x0001 --kind input --unit 11 --json`,
+  zlan reg read 192.168.15.42 0x0001 --kind input --unit 11 --json
+  zlan reg read 192.168.15.47 0x0001 --kind coil --unit 133`,
 		Args: func(_ *cobra.Command, args []string) error {
 			if g.serial != "" {
-				return fmt.Errorf("reg 通过 ZLAN 网络数据通道读写寄存器,不能与 --serial 同用")
+				return fmt.Errorf("reg 通过 ZLAN 网络数据通道读写 Modbus 数据点,不能与 --serial 同用")
 			}
 			if len(args) < 2 || len(args) > 3 {
-				return fmt.Errorf("需要:目标(IP 或 DevID/MAC)+ 起始寄存器地址 + 可选数量")
+				return fmt.Errorf("需要:目标(IP 或 DevID/MAC)+ 起始地址 + 可选数量")
 			}
 			return nil
 		},
@@ -79,11 +80,11 @@ func newRegReadCmd(g *globalFlags, opt *regOptions) *cobra.Command {
 					return exitErr(ExitUsage, err)
 				}
 			}
-			if err := validateRegRange(addr, int(count), 125); err != nil {
+			readKind, err := parseReadKind(opt.kind)
+			if err != nil {
 				return exitErr(ExitUsage, err)
 			}
-			fn, kind, err := readKind(opt.kind)
-			if err != nil {
+			if err := validateRegRange(addr, int(count), readKind.maxCount); err != nil {
 				return exitErr(ExitUsage, err)
 			}
 			unit, err := parseUnit(opt.unit)
@@ -106,27 +107,40 @@ func newRegReadCmd(g *globalFlags, opt *regOptions) *cobra.Command {
 					return err
 				}
 				defer client.Close()
-				values, err := client.ReadRegisters(unit, fn, addr, count)
+				var values []uint16
+				if readKind.bits {
+					bits, err := client.ReadBits(unit, readKind.fn, addr, count)
+					if err != nil {
+						return err
+					}
+					values = bitValues(bits)
+				} else {
+					values, err = client.ReadRegisters(unit, readKind.fn, addr, count)
+					if err != nil {
+						return err
+					}
+				}
 				if err != nil {
 					return err
 				}
-				return renderRegRead(cmd, g, host, path, unit, kind, addr, values)
+				return renderRegRead(cmd, g, host, path, unit, readKind.kind, addr, values)
 			})
 		},
 	}
-	cmd.Flags().StringVar(&opt.kind, "kind", "holding", "读取类型:holding|input")
+	cmd.Flags().StringVar(&opt.kind, "kind", "holding", "读取类型:holding|input|coil|discrete")
 	return cmd
 }
 
 func newRegWriteCmd(g *globalFlags, opt *regOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "write <target> <addr> <value> [value...]",
-		Short: "写入 Modbus holding register",
+		Short: "写入 Modbus holding register 或单个 coil",
 		Example: `  zlan reg write 192.168.15.42 0x0002 11 --unit 1
-  zlan reg write 192.168.15.42 0x0010 0x0001 0x0002 --unit 11`,
+  zlan reg write 192.168.15.42 0x0010 0x0001 0x0002 --unit 11
+  zlan reg write 192.168.15.47 0x0001 off --kind coil --unit 133`,
 		Args: func(_ *cobra.Command, args []string) error {
 			if g.serial != "" {
-				return fmt.Errorf("reg 通过 ZLAN 网络数据通道读写寄存器,不能与 --serial 同用")
+				return fmt.Errorf("reg 通过 ZLAN 网络数据通道读写 Modbus 数据点,不能与 --serial 同用")
 			}
 			if len(args) < 3 {
 				return fmt.Errorf("需要:目标(IP 或 DevID/MAC)+ 起始寄存器地址 + 至少一个值")
@@ -138,12 +152,35 @@ func newRegWriteCmd(g *globalFlags, opt *regOptions) *cobra.Command {
 			if err != nil {
 				return exitErr(ExitUsage, err)
 			}
-			values, err := parseRegValues(args[2:])
+			kind, coil, err := parseWriteKind(opt.kind)
 			if err != nil {
 				return exitErr(ExitUsage, err)
 			}
-			if err := validateRegRange(addr, len(values), 123); err != nil {
-				return exitErr(ExitUsage, err)
+			var (
+				coilValue bool
+				values    []uint16
+			)
+			if coil {
+				if len(args) != 3 {
+					return exitErr(ExitUsage, fmt.Errorf("--kind coil 一次只能写一个值"))
+				}
+				coilValue, err = parseCoilValue(args[2])
+				if err != nil {
+					return exitErr(ExitUsage, err)
+				}
+				if coilValue {
+					values = []uint16{1}
+				} else {
+					values = []uint16{0}
+				}
+			} else {
+				values, err = parseRegValues(args[2:])
+				if err != nil {
+					return exitErr(ExitUsage, err)
+				}
+				if err := validateRegRange(addr, len(values), 123); err != nil {
+					return exitErr(ExitUsage, err)
+				}
 			}
 			unit, err := parseUnit(opt.unit)
 			if err != nil {
@@ -165,13 +202,20 @@ func newRegWriteCmd(g *globalFlags, opt *regOptions) *cobra.Command {
 					return err
 				}
 				defer client.Close()
-				if err := client.WriteRegisters(unit, addr, values); err != nil {
-					return err
+				if coil {
+					if err := client.WriteCoil(unit, addr, coilValue); err != nil {
+						return err
+					}
+				} else {
+					if err := client.WriteRegisters(unit, addr, values); err != nil {
+						return err
+					}
 				}
-				return renderRegWrite(cmd, g, host, path, unit, addr, values)
+				return renderRegWrite(cmd, g, host, path, unit, kind, addr, values)
 			})
 		},
 	}
+	cmd.Flags().StringVar(&opt.kind, "kind", "holding", "写入类型:holding|coil")
 	return cmd
 }
 
@@ -314,15 +358,58 @@ func validateRegRange(addr uint16, count int, maxCount int) error {
 	return nil
 }
 
-func readKind(raw string) (byte, string, error) {
+type readKindSpec struct {
+	fn       byte
+	kind     string
+	bits     bool
+	maxCount int
+}
+
+func parseReadKind(raw string) (readKindSpec, error) {
 	switch raw {
 	case "", "holding", "hold", "hr":
-		return modbus.FuncReadHoldingRegisters, "holding", nil
+		return readKindSpec{fn: modbus.FuncReadHoldingRegisters, kind: "holding", maxCount: 125}, nil
 	case "input", "ir":
-		return modbus.FuncReadInputRegisters, "input", nil
+		return readKindSpec{fn: modbus.FuncReadInputRegisters, kind: "input", maxCount: 125}, nil
+	case "coil", "coils", "c":
+		return readKindSpec{fn: modbus.FuncReadCoils, kind: "coil", bits: true, maxCount: 2000}, nil
+	case "discrete", "discrete-input", "discrete-inputs", "di":
+		return readKindSpec{fn: modbus.FuncReadDiscreteInputs, kind: "discrete", bits: true, maxCount: 2000}, nil
 	default:
-		return 0, "", fmt.Errorf("--kind 需为 holding|input")
+		return readKindSpec{}, fmt.Errorf("--kind 需为 holding|input|coil|discrete")
 	}
+}
+
+func parseWriteKind(raw string) (kind string, coil bool, err error) {
+	switch raw {
+	case "", "holding", "hold", "hr":
+		return "holding", false, nil
+	case "coil", "coils", "c":
+		return "coil", true, nil
+	default:
+		return "", false, fmt.Errorf("--kind 需为 holding|coil")
+	}
+}
+
+func parseCoilValue(raw string) (bool, error) {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "1", "true", "t", "on", "yes", "y":
+		return true, nil
+	case "0", "false", "f", "off", "no", "n":
+		return false, nil
+	default:
+		return false, fmt.Errorf("coil 值需为 on|off|true|false|1|0")
+	}
+}
+
+func bitValues(bits []bool) []uint16 {
+	values := make([]uint16, len(bits))
+	for i, bit := range bits {
+		if bit {
+			values[i] = 1
+		}
+	}
+	return values
 }
 
 func emitRegWarnings(cmd *cobra.Command, g *globalFlags, warnings []string) {
@@ -377,7 +464,7 @@ func renderRegRead(cmd *cobra.Command, g *globalFlags, target string, path regDa
 	return renderRegRows(cmd.OutOrStdout(), rows)
 }
 
-func renderRegWrite(cmd *cobra.Command, g *globalFlags, target string, path regDataPath, unit byte, addr uint16, values []uint16) error {
+func renderRegWrite(cmd *cobra.Command, g *globalFlags, target string, path regDataPath, unit byte, kind string, addr uint16, values []uint16) error {
 	rows := regRows(addr, values)
 	if g.jsonOut {
 		return writeJSON(cmd.OutOrStdout(), regResultJSON{
@@ -388,13 +475,14 @@ func renderRegWrite(cmd *cobra.Command, g *globalFlags, target string, path regD
 			WorkMode:      path.WorkMode,
 			AppProto:      path.AppProto,
 			Unit:          unit,
+			Kind:          kind,
 			Address:       addr,
 			Count:         len(values),
 			Values:        rows,
 			Warnings:      path.Warnings,
 		})
 	}
-	fmt.Fprintf(cmd.OutOrStdout(), "wrote %d register(s) via %s to %s unit=%d\n", len(values), path.Mode, path.Address, unit)
+	fmt.Fprintf(cmd.OutOrStdout(), "wrote %d %s value(s) via %s to %s unit=%d\n", len(values), kind, path.Mode, path.Address, unit)
 	return renderRegRows(cmd.OutOrStdout(), rows)
 }
 

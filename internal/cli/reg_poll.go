@@ -16,6 +16,7 @@ type regPollSpec struct {
 	unit     byte
 	fn       byte
 	kind     string
+	bits     bool
 	addr     uint16
 	count    uint16
 	interval time.Duration
@@ -34,6 +35,7 @@ func newRegPollCmd(g *globalFlags, opt *regOptions) *cobra.Command {
 示例:
   zlan reg poll 192.168.1.200 0x0001 4 --interval 1s --unit 1
   zlan reg poll 192.168.1.200 0x0001 --kind input --json
+  zlan reg poll 192.168.1.200 0x0001 --kind coil
   zlan reg poll 192.168.1.200 0x0001 2 --times 10`,
 		Args: func(_ *cobra.Command, args []string) error {
 			if g.serial != "" {
@@ -56,11 +58,11 @@ func newRegPollCmd(g *globalFlags, opt *regOptions) *cobra.Command {
 					return exitErr(ExitUsage, err)
 				}
 			}
-			if err := validateRegRange(addr, int(count), 125); err != nil {
+			readKind, err := parseReadKind(opt.kind)
+			if err != nil {
 				return exitErr(ExitUsage, err)
 			}
-			fn, kind, err := readKind(opt.kind)
-			if err != nil {
+			if err := validateRegRange(addr, int(count), readKind.maxCount); err != nil {
 				return exitErr(ExitUsage, err)
 			}
 			unit, err := parseUnit(opt.unit)
@@ -82,14 +84,14 @@ func newRegPollCmd(g *globalFlags, opt *regOptions) *cobra.Command {
 			}
 			defer sess.Close()
 			return runRegPoll(cmd, g, sess, &regPollSpec{
-				host: host, path: path, unit: unit, fn: fn, kind: kind,
+				host: host, path: path, unit: unit, fn: readKind.fn, kind: readKind.kind, bits: readKind.bits,
 				addr: addr, count: count, interval: interval, times: times,
 			})
 		},
 	}
 	cmd.Flags().DurationVar(&interval, "interval", time.Second, "轮询间隔")
 	cmd.Flags().IntVar(&times, "times", 0, "轮询次数(0=无限,Ctrl-C 退出)")
-	cmd.Flags().StringVar(&opt.kind, "kind", "holding", "读取类型:holding|input")
+	cmd.Flags().StringVar(&opt.kind, "kind", "holding", "读取类型:holding|input|coil|discrete")
 	return cmd
 }
 
@@ -102,7 +104,18 @@ func runRegPoll(cmd *cobra.Command, g *globalFlags, sess *regSession, spec *regP
 	ticker := time.NewTicker(spec.interval)
 	defer ticker.Stop()
 	for i := 0; spec.times == 0 || i < spec.times; i++ {
-		values, reconnected, err := sess.read(ctx, spec.unit, spec.fn, spec.addr, spec.count)
+		var (
+			values      []uint16
+			reconnected bool
+			err         error
+		)
+		if spec.bits {
+			var bits []bool
+			bits, reconnected, err = sess.readBits(ctx, spec.unit, spec.fn, spec.addr, spec.count)
+			values = bitValues(bits)
+		} else {
+			values, reconnected, err = sess.read(ctx, spec.unit, spec.fn, spec.addr, spec.count)
+		}
 		if ctx.Err() != nil {
 			return nil
 		}

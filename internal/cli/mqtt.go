@@ -224,18 +224,21 @@ func parseMQTTReadSpec(regOpt *regOptions, args []string) (mqttReadSpec, error) 
 			return mqttReadSpec{}, err
 		}
 	}
-	if err := validateRegRange(addr, int(count), 125); err != nil {
+	readKind, err := parseReadKind(regOpt.kind)
+	if err != nil {
 		return mqttReadSpec{}, err
 	}
-	fn, kind, err := readKind(regOpt.kind)
-	if err != nil {
+	if readKind.bits {
+		return mqttReadSpec{}, fmt.Errorf("mqtt publish/bridge 目前只支持 holding|input 寄存器读取")
+	}
+	if err := validateRegRange(addr, int(count), readKind.maxCount); err != nil {
 		return mqttReadSpec{}, err
 	}
 	unit, err := parseUnit(regOpt.unit)
 	if err != nil {
 		return mqttReadSpec{}, err
 	}
-	return mqttReadSpec{addr: addr, count: count, fn: fn, kind: kind, unit: unit}, nil
+	return mqttReadSpec{addr: addr, count: count, fn: readKind.fn, kind: readKind.kind, unit: unit}, nil
 }
 
 func readMQTTSample(cmd *cobra.Command, g *globalFlags, regOpt *regOptions, target string, spec mqttReadSpec) (mqttSample, error) {

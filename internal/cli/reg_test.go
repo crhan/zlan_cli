@@ -38,6 +38,41 @@ func TestParseRegValuesCommaAndSpace(t *testing.T) {
 	}
 }
 
+func TestParseReadKindCoil(t *testing.T) {
+	got, err := parseReadKind("coil")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.fn != modbus.FuncReadCoils || got.kind != "coil" || !got.bits || got.maxCount != 2000 {
+		t.Fatalf("kind=%+v", got)
+	}
+}
+
+func TestParseWriteKindCoil(t *testing.T) {
+	kind, coil, err := parseWriteKind("coil")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if kind != "coil" || !coil {
+		t.Fatalf("kind=%s coil=%v", kind, coil)
+	}
+}
+
+func TestParseCoilValue(t *testing.T) {
+	for _, raw := range []string{"on", "true", "1", "yes"} {
+		got, err := parseCoilValue(raw)
+		if err != nil || !got {
+			t.Fatalf("%s => %v %v", raw, got, err)
+		}
+	}
+	for _, raw := range []string{"off", "false", "0", "no"} {
+		got, err := parseCoilValue(raw)
+		if err != nil || got {
+			t.Fatalf("%s => %v %v", raw, got, err)
+		}
+	}
+}
+
 func TestResolveRegDataPathAutoModbus(t *testing.T) {
 	p := regParam(t, "modbus")
 	path, err := resolveRegDataPath(&p, &regOptions{mode: "auto"})

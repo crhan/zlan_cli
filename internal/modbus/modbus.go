@@ -1,4 +1,4 @@
-// Package modbus implements the small Modbus subset needed for direct register
+// Package modbus implements the small Modbus subset needed for direct data
 // access through a ZLAN data channel.
 package modbus
 
@@ -24,8 +24,11 @@ const (
 )
 
 const (
+	FuncReadCoils            byte = 0x01
+	FuncReadDiscreteInputs   byte = 0x02
 	FuncReadHoldingRegisters byte = 0x03
 	FuncReadInputRegisters   byte = 0x04
+	FuncWriteSingleCoil      byte = 0x05
 	FuncWriteSingleRegister  byte = 0x06
 	FuncWriteMultipleRegs    byte = 0x10
 )
@@ -97,6 +100,37 @@ func (c *Client) ReadRegisters(unit byte, fn byte, addr, count uint16) ([]uint16
 	return values, nil
 }
 
+// ReadBits reads coils or discrete inputs with function 0x01/0x02.
+func (c *Client) ReadBits(unit byte, fn byte, addr, count uint16) ([]bool, error) {
+	if fn != FuncReadCoils && fn != FuncReadDiscreteInputs {
+		return nil, fmt.Errorf("unsupported bit read function 0x%02x", fn)
+	}
+	if count == 0 || count > 2000 {
+		return nil, fmt.Errorf("bit count must be 1..2000")
+	}
+	pdu := []byte{fn, byte(addr >> 8), byte(addr), byte(count >> 8), byte(count)}
+	resp, err := c.roundTrip(unit, pdu)
+	if err != nil {
+		return nil, err
+	}
+	if err := checkException(resp, fn); err != nil {
+		return nil, err
+	}
+	if len(resp) < 2 || resp[0] != fn {
+		return nil, fmt.Errorf("unexpected bit read response: % x", resp)
+	}
+	byteCount := int(resp[1])
+	wantByteCount := int((uint32(count) + 7) / 8)
+	if byteCount != wantByteCount || len(resp) != 2+byteCount {
+		return nil, fmt.Errorf("bad bit read response length: % x", resp)
+	}
+	values := make([]bool, count)
+	for i := uint16(0); i < count; i++ {
+		values[i] = resp[2+i/8]&(1<<uint(i%8)) != 0
+	}
+	return values, nil
+}
+
 // WriteRegisters writes one or more holding registers. A single value uses
 // function 0x06; multiple values use function 0x10.
 func (c *Client) WriteRegisters(unit byte, addr uint16, values []uint16) error {
@@ -146,6 +180,31 @@ func (c *Client) WriteRegisters(unit byte, addr uint16, values []uint16) error {
 		binary.BigEndian.Uint16(resp[1:]) != addr ||
 		binary.BigEndian.Uint16(resp[3:]) != quantity {
 		return fmt.Errorf("unexpected write response: % x", resp)
+	}
+	return nil
+}
+
+// WriteCoil writes one coil with function 0x05. true serializes as 0xff00,
+// false serializes as 0x0000 per Modbus convention.
+func (c *Client) WriteCoil(unit byte, addr uint16, value bool) error {
+	var raw uint16
+	if value {
+		raw = 0xff00
+	}
+	pdu := []byte{
+		FuncWriteSingleCoil,
+		byte(addr >> 8), byte(addr),
+		byte(raw >> 8), byte(raw),
+	}
+	resp, err := c.roundTrip(unit, pdu)
+	if err != nil {
+		return err
+	}
+	if err := checkException(resp, FuncWriteSingleCoil); err != nil {
+		return err
+	}
+	if len(resp) != len(pdu) || string(resp) != string(pdu) {
+		return fmt.Errorf("unexpected coil write response: % x", resp)
 	}
 	return nil
 }
@@ -230,7 +289,8 @@ func (c *Client) roundTripRTUOverTCP(unit byte, pdu []byte) ([]byte, error) {
 	switch {
 	case fn == pdu[0]|0x80:
 		rest = make([]byte, 3) // exception code + CRC
-	case fn == FuncReadHoldingRegisters || fn == FuncReadInputRegisters:
+	case fn == FuncReadCoils || fn == FuncReadDiscreteInputs ||
+		fn == FuncReadHoldingRegisters || fn == FuncReadInputRegisters:
 		count := make([]byte, 1)
 		if _, err := io.ReadFull(c.conn, count); err != nil {
 			return nil, err
@@ -245,7 +305,7 @@ func (c *Client) roundTripRTUOverTCP(unit byte, pdu []byte) ([]byte, error) {
 			return nil, fmt.Errorf("bad rtu crc: % x", rsp)
 		}
 		return rsp[1 : len(rsp)-2], nil
-	case fn == FuncWriteSingleRegister || fn == FuncWriteMultipleRegs:
+	case fn == FuncWriteSingleCoil || fn == FuncWriteSingleRegister || fn == FuncWriteMultipleRegs:
 		rest = make([]byte, 6) // address + value/count + CRC
 	default:
 		return nil, fmt.Errorf("unexpected rtu function 0x%02x", fn)

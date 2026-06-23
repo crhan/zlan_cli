@@ -75,6 +75,19 @@ func (s *regSession) read(ctx context.Context, unit, fn byte, addr, count uint16
 	return vals, true, err
 }
 
+// readBits 读 coil/discrete input;遇连接级断开自动重连一次重试。Modbus 读是幂等的。
+func (s *regSession) readBits(ctx context.Context, unit, fn byte, addr, count uint16) (vals []bool, reconnected bool, err error) {
+	vals, err = s.client.ReadBits(unit, fn, addr, count)
+	if err == nil || !isConnError(err) {
+		return vals, false, err
+	}
+	if err = s.reconnect(ctx); err != nil {
+		return nil, true, err
+	}
+	vals, err = s.client.ReadBits(unit, fn, addr, count)
+	return vals, true, err
+}
+
 // write 写寄存器;遇连接级断开自动重连一次重试。写寄存器是写定值,幂等,重发安全。
 func (s *regSession) write(ctx context.Context, unit byte, addr uint16, values []uint16) (reconnected bool, err error) {
 	err = s.client.WriteRegisters(unit, addr, values)
@@ -85,6 +98,18 @@ func (s *regSession) write(ctx context.Context, unit byte, addr uint16, values [
 		return true, err
 	}
 	return true, s.client.WriteRegisters(unit, addr, values)
+}
+
+// writeCoil 写单个 coil;写定值,连接断开时可安全重连重试一次。
+func (s *regSession) writeCoil(ctx context.Context, unit byte, addr uint16, value bool) (reconnected bool, err error) {
+	err = s.client.WriteCoil(unit, addr, value)
+	if err == nil || !isConnError(err) {
+		return false, err
+	}
+	if err = s.reconnect(ctx); err != nil {
+		return true, err
+	}
+	return true, s.client.WriteCoil(unit, addr, value)
 }
 
 // isConnError 判断错误是否为 TCP 连接级断开(对端 FIN/RST 或本地已关闭),据此触发重连。
@@ -128,7 +153,10 @@ func newRegSessionCmd(g *globalFlags, opt *regOptions) *cobra.Command {
 交互命令:
   read  <addr> [count]      读 holding 寄存器(0x03)
   iread <addr> [count]      读 input 寄存器(0x04)
+  cread <addr> [count]      读 coil(0x01)
+  dread <addr> [count]      读 discrete input(0x02)
   write <addr> <value...>   写 holding 寄存器(0x06/0x10)
+  coil  <addr> <on|off>     写单个 coil(0x05)
   unit  <n>                 切换当前 Modbus 从站地址(1..247)
   help                      显示帮助
   quit                      退出(也可 Ctrl-D)
@@ -240,8 +268,14 @@ func (r *regREPL) dispatch(line string) (quit bool) {
 		r.read(modbus.FuncReadHoldingRegisters, "holding", fields[1:])
 	case "iread", "ir":
 		r.read(modbus.FuncReadInputRegisters, "input", fields[1:])
+	case "cread", "cr":
+		r.readBits(modbus.FuncReadCoils, "coil", fields[1:])
+	case "dread", "dr":
+		r.readBits(modbus.FuncReadDiscreteInputs, "discrete", fields[1:])
 	case "write", "w":
 		r.write(fields[1:])
+	case "coil", "cwrite", "cw":
+		r.writeCoil(fields[1:])
 	default:
 		fmt.Fprintln(r.cmd.ErrOrStderr(), yellow("未知命令: "+fields[0]+"(输入 help)"))
 	}
@@ -302,6 +336,38 @@ func (r *regREPL) read(fn byte, kind string, args []string) {
 	_ = renderRegRead(r.cmd, r.g, r.host, r.path, r.unit, kind, addr, values)
 }
 
+func (r *regREPL) readBits(fn byte, kind string, args []string) {
+	errw := r.cmd.ErrOrStderr()
+	if len(args) < 1 || len(args) > 2 {
+		fmt.Fprintln(errw, yellow("用法: "+readVerb(kind)+" <addr> [count]"))
+		return
+	}
+	addr, err := parseUint16(args[0], "addr")
+	if err != nil {
+		fmt.Fprintln(errw, yellow(err.Error()))
+		return
+	}
+	count := uint16(1)
+	if len(args) == 2 {
+		count, err = parseUint16(args[1], "count")
+		if err != nil {
+			fmt.Fprintln(errw, yellow(err.Error()))
+			return
+		}
+	}
+	if err := validateRegRange(addr, int(count), 2000); err != nil {
+		fmt.Fprintln(errw, yellow(err.Error()))
+		return
+	}
+	bits, reconnected, err := r.sess.readBits(r.cmd.Context(), r.unit, fn, addr, count)
+	r.noteReconnect(reconnected)
+	if err != nil {
+		fmt.Fprintln(errw, "错误: "+err.Error())
+		return
+	}
+	_ = renderRegRead(r.cmd, r.g, r.host, r.path, r.unit, kind, addr, bitValues(bits))
+}
+
 func (r *regREPL) write(args []string) {
 	errw := r.cmd.ErrOrStderr()
 	if len(args) < 2 {
@@ -328,7 +394,36 @@ func (r *regREPL) write(args []string) {
 		fmt.Fprintln(errw, "错误: "+err.Error())
 		return
 	}
-	_ = renderRegWrite(r.cmd, r.g, r.host, r.path, r.unit, addr, values)
+	_ = renderRegWrite(r.cmd, r.g, r.host, r.path, r.unit, "holding", addr, values)
+}
+
+func (r *regREPL) writeCoil(args []string) {
+	errw := r.cmd.ErrOrStderr()
+	if len(args) != 2 {
+		fmt.Fprintln(errw, yellow("用法: coil <addr> <on|off>"))
+		return
+	}
+	addr, err := parseUint16(args[0], "addr")
+	if err != nil {
+		fmt.Fprintln(errw, yellow(err.Error()))
+		return
+	}
+	value, err := parseCoilValue(args[1])
+	if err != nil {
+		fmt.Fprintln(errw, yellow(err.Error()))
+		return
+	}
+	reconnected, err := r.sess.writeCoil(r.cmd.Context(), r.unit, addr, value)
+	r.noteReconnect(reconnected)
+	if err != nil {
+		fmt.Fprintln(errw, "错误: "+err.Error())
+		return
+	}
+	raw := uint16(0)
+	if value {
+		raw = 1
+	}
+	_ = renderRegWrite(r.cmd, r.g, r.host, r.path, r.unit, "coil", addr, []uint16{raw})
 }
 
 func (r *regREPL) noteReconnect(reconnected bool) {
@@ -339,18 +434,27 @@ func (r *regREPL) noteReconnect(reconnected bool) {
 
 // readVerb 把 holding/input 映射回对应交互动词,用于用法提示。
 func readVerb(kind string) string {
-	if kind == "input" {
+	switch kind {
+	case "input":
 		return "iread"
+	case "coil":
+		return "cread"
+	case "discrete":
+		return "dread"
+	default:
+		return "read"
 	}
-	return "read"
 }
 
 const regREPLHelp = `交互命令:
   read  <addr> [count]      读 holding 寄存器(0x03)
   iread <addr> [count]      读 input 寄存器(0x04)
+  cread <addr> [count]      读 coil(0x01)
+  dread <addr> [count]      读 discrete input(0x02)
   write <addr> <value...>   写 holding 寄存器(0x06/0x10)
+  coil  <addr> <on|off>     写单个 coil(0x05)
   unit  <n>                 切换当前 Modbus 从站地址(1..247)
   help                      显示此帮助
   quit                      退出(也可 Ctrl-D)
-地址与值支持 0x 前缀;一次读至多 125、写至多 123 个寄存器。
+地址与值支持 0x 前缀;一次读寄存器至多 125、读 bit 至多 2000、写寄存器至多 123。
 `
