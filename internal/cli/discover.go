@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 	"net"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -41,6 +43,9 @@ func newDiscoverCmd(g *globalFlags) *cobra.Command {
 			}
 			if !g.quiet && !g.jsonOut {
 				cmd.PrintErrf("正在发现设备(UDP %d,等待 %s)...\n", protocol.MgmtPort, g.timeout)
+				opt.OnProbe = func(p transport.ProbeInfo) {
+					cmd.PrintErrln(formatProbeLine(p))
+				}
 			}
 			devs, err := device.DiscoverWithOptions(cmd.Context(), opt)
 			if err != nil {
@@ -63,6 +68,29 @@ func newDiscoverCmd(g *globalFlags) *cobra.Command {
 	cmd.Flags().StringVar(&bind, "bind", "", "本地绑定 IPv4 地址(默认 0.0.0.0)")
 	cmd.Flags().IntVar(&bindPort, "bind-port", 0, "本地 UDP 源端口(默认随机端口)")
 	return cmd
+}
+
+// formatProbeLine 把一个发现出口渲染成一行诊断:出口网卡/源地址 → 覆盖的广播目标
+// (及单播探测数)。让用户一眼看出"请求从哪发出去、覆盖了哪些网段"——尤其多网卡或
+// 排查"设备 IP 不在本机网段时为何扫不到"时有用。
+func formatProbeLine(p transport.ProbeInfo) string {
+	var b strings.Builder
+	b.WriteString("  出口 ")
+	if p.Iface != "" {
+		fmt.Fprintf(&b, "[%s] ", p.Iface)
+	}
+	b.WriteString(net.JoinHostPort(p.LocalIP.String(), strconv.Itoa(p.LocalPort)))
+	if len(p.BroadcastTargets) > 0 {
+		targets := make([]string, len(p.BroadcastTargets))
+		for i, t := range p.BroadcastTargets {
+			targets[i] = t.String()
+		}
+		fmt.Fprintf(&b, " → 广播 %s", strings.Join(targets, ", "))
+	}
+	if p.UnicastTargets > 0 {
+		fmt.Fprintf(&b, "(单播探测 %d)", p.UnicastTargets)
+	}
+	return b.String()
 }
 
 func parseDiscoverOptions(wait time.Duration, bind string, bindPort int, targets []string) (transport.DiscoverOptions, error) {

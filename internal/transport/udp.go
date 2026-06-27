@@ -31,11 +31,13 @@ func directedBroadcast(ip net.IP, mask net.IPMask) net.IP {
 }
 
 type ipv4Network struct {
-	ip   net.IP
-	mask net.IPMask
+	iface string // 出口网卡名,仅用于诊断展示
+	ip    net.IP
+	mask  net.IPMask
 }
 
 type discoverProbe struct {
+	iface            string
 	bindIP           net.IP
 	bindPort         int
 	broadcastTargets []net.IP
@@ -67,7 +69,7 @@ func localIPv4Networks() []ipv4Network {
 				if ip4 == nil || len(ipnet.Mask) != net.IPv4len {
 					continue
 				}
-				nets = append(nets, ipv4Network{ip: cloneIP(ip4), mask: cloneMask(ipnet.Mask)})
+				nets = append(nets, ipv4Network{iface: ifi.Name, ip: cloneIP(ip4), mask: cloneMask(ipnet.Mask)})
 			}
 		}
 	}
@@ -108,6 +110,7 @@ func discoverProbesForNetworks(nets []ipv4Network, opt DiscoverOptions) []discov
 			broadcastTargets = append([]net.IP{bc}, broadcastTargets...)
 		}
 		probes = append(probes, discoverProbe{
+			iface:            n.iface,
 			bindIP:           cloneIP(ip4),
 			bindPort:         opt.BindPort,
 			broadcastTargets: uniqueIPs(broadcastTargets),
@@ -218,6 +221,19 @@ type DiscoverOptions struct {
 	BindIP   net.IP
 	BindPort int
 	Targets  []net.IP
+	// OnProbe 在每个出口 socket 绑定成功后同步回调一次,报告实际生效的源地址/
+	// 网卡与目标网段,供上层向用户展示"从哪发出去的"。绑定失败的出口不回调。
+	OnProbe func(ProbeInfo)
+}
+
+// ProbeInfo 描述一个已生效的发现出口:绑定的源地址/端口、出口网卡及覆盖目标。
+// 显式 --target 模式下 Iface 为空、LocalIP 多为 0.0.0.0(由内核按路由选源)。
+type ProbeInfo struct {
+	Iface            string
+	LocalIP          net.IP
+	LocalPort        int
+	BroadcastTargets []net.IP
+	UnicastTargets   int
 }
 
 // DiscoverWithOptions 发现局域网内所有设备。
@@ -238,6 +254,18 @@ func DiscoverWithOptions(ctx context.Context, opt DiscoverOptions) ([]Device, er
 			continue
 		}
 		defer conn.Close()
+		if opt.OnProbe != nil {
+			info := ProbeInfo{
+				Iface:            p.iface,
+				BroadcastTargets: p.broadcastTargets,
+				UnicastTargets:   len(p.unicastTargets),
+			}
+			if local, ok := conn.LocalAddr().(*net.UDPAddr); ok {
+				info.LocalIP = cloneIP(local.IP)
+				info.LocalPort = local.Port
+			}
+			opt.OnProbe(info)
+		}
 		conns = append(conns, discoverConn{
 			conn:             conn,
 			broadcastTargets: p.broadcastTargets,
