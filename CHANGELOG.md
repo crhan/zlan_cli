@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v0.8.0 - 2026-06-27
+
+- Print each discovery egress (source IP/port, interface, broadcast targets, and unicast probe count) during `discover`, so it is clear where probes are sent from on multi-NIC or cross-subnet hosts.
+- Document how to find a factory-default-IP device (`192.168.1.200`) whose subnet is absent from the host: add a secondary address to enter the same subnet so the device can reply at layer 2 without a gateway.
+
 ## v0.7.0 - 2026-06-23
 
 - Add Rev.4 UDP `user_param` TLV parsing and WiFi get/set support.
